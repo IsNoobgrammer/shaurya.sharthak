@@ -1,7 +1,47 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Copy, Palette, Clock3 } from 'lucide-react';
+import { X, Check, Copy, Palette, Clock3, Timer } from 'lucide-react';
 import { themes, type ThemeId, applyTheme } from '../data/themes';
+
+// ── Time tracking ─────────────────────────────────────────────────────────────
+const TIME_KEY = 'portfolio-total-seconds';
+const SESSION_START = Date.now();
+
+function getLifetimeSecs(): number {
+  try { return parseInt(localStorage.getItem(TIME_KEY) ?? '0', 10) || 0; } catch { return 0; }
+}
+
+function saveSession() {
+  const sessionSecs = Math.floor((Date.now() - SESSION_START) / 1000);
+  try {
+    const prev = getLifetimeSecs();
+    localStorage.setItem(TIME_KEY, String(prev + sessionSecs));
+  } catch { /* ignore */ }
+}
+
+function fmtDuration(totalSecs: number): string {
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = totalSecs % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function useTimeSpent() {
+  const [session, setSession] = useState(0);
+  const savedRef = useRef(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setSession(Math.floor((Date.now() - SESSION_START) / 1000)), 1000);
+    const onUnload = () => { if (!savedRef.current) { saveSession(); savedRef.current = true; } };
+    window.addEventListener('beforeunload', onUnload);
+    return () => { clearInterval(id); window.removeEventListener('beforeunload', onUnload); };
+  }, []);
+
+  const lifetime = getLifetimeSecs() + session;
+  return { session, lifetime };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getLocalOffset(): string {
@@ -121,6 +161,7 @@ interface SettingsPanelProps {
 export default function SettingsPanel({ open, onClose, theme, onThemeChange }: SettingsPanelProps) {
   const localOffset = getLocalOffset();
   const localTZ = getLocalTZName();
+  const { session, lifetime } = useTimeSpent();
 
   // Close on Escape
   useEffect(() => {
@@ -185,6 +226,25 @@ export default function SettingsPanel({ open, onClose, theme, onThemeChange }: S
                 ))}
               </div>
             </div>
+
+            {/* Time Spent */}
+            <div className="settings-time-spent">
+              <span className="settings-time-label">
+                <Timer size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                Time on site
+              </span>
+              <div className="settings-time-values">
+                <div className="settings-time-item">
+                  <span className="settings-time-item-label">session</span>
+                  <span className="settings-time-item-value">{fmtDuration(session)}</span>
+                </div>
+                <div className="settings-time-item">
+                  <span className="settings-time-item-label">lifetime</span>
+                  <span className="settings-time-item-value">{fmtDuration(lifetime)}</span>
+                </div>
+              </div>
+            </div>
+
           </motion.div>
         </motion.div>
       )}
