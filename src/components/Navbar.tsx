@@ -11,7 +11,7 @@ const navLinks = [
   { label: 'Contact', href: '#contact' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
@@ -43,9 +43,15 @@ export default function Navbar() {
     <nav className={`navbar${scrolled ? ' scrolled' : ''}`} role="navigation" aria-label="Main navigation">
       <div className="navbar-inner">
         {/* Logo */}
-        <a href="#hero" className="navbar-logo" onClick={() => handleNavClick('#hero')}>
+        <button
+          className="navbar-logo"
+          onClick={onLogoClick}
+          title="Settings"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+        >
           <span>Shaurya</span>.Sharthak
-        </a>
+          <span className="navbar-logo-gear">⚙</span>
+        </button>
 
         {/* Desktop links */}
         <ul className="navbar-links" id="nav-links">
