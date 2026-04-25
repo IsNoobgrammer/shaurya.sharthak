@@ -19,6 +19,7 @@ Research-oriented personal portfolio website built with React, Vite, and Three.j
 - [ ] **UNIX Timestamp Generator:** Copy-to-clipboard widget for current UNIX epoch.
 - [ ] **Handy Tools Section:** Add a dedicated `/tools` section.
   - [ ] Live Base64 Encode/Decode (with auto-detect logic).
+- [ ] **CI/CD Pipeline:** Add an automated testing pipeline in the deploy workflow.
 
 ---
 *Built doing a lot with very little.*
