@@ -78,7 +78,15 @@ async function fetchPosts(): Promise<BlogPost[]> {
 
 // ── Simple Markdown → HTML renderer (no deps) ────────────────────────────────
 function renderMarkdown(md: string): string {
-  return md
+  const codeBlocks: string[] = [];
+  
+  // 1. Extract code blocks so they aren't messed up by other replacements
+  let parsed = md.replace(/```(\w*)\r?\n([\s\S]+?)```/g, (_, lang, code) => {
+    codeBlocks.push(`<pre><code class="language-${lang}">${code}</code></pre>`);
+    return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+  });
+
+  parsed = parsed
     // headings
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
@@ -95,16 +103,17 @@ function renderMarkdown(md: string): string {
     .replace(/^\s*[-*+] (.+)$/gm, '<li>$1</li>')
     // links
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-    // code blocks (simple)
-    .replace(/```[\w]*\n([\s\S]+?)```/g, '<pre><code>$1</code></pre>')
     // horizontal rule
     .replace(/^---$/gm, '<hr />')
     // paragraphs (double newline)
-    .replace(/\n\n+/g, '</p><p>')
-    // wrap in p
-    .replace(/^(?!<[hH\d]|<pre|<blockquote|<li|<hr)(.+)/gm, (_, line) => line ? line : '')
+    .replace(/\r?\n\r?\n+/g, '</p><p>')
     // wrap loose li in ul
     .replace(/(<li>.*<\/li>)+/g, (m) => `<ul>${m}</ul>`);
+
+  // 2. Restore code blocks
+  parsed = parsed.replace(/___CODE_BLOCK_(\d+)___/g, (_, i) => codeBlocks[parseInt(i, 10)]);
+
+  return parsed;
 }
 
 // ── Inline Blog Reader Panel ─────────────────────────────────────────────────
