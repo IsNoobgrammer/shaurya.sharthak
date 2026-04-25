@@ -115,7 +115,7 @@ export default function Projects() {
                     </div>
                     <p className="project-description">{project.description}</p>
                     <div className="project-tags">
-                      {project.tags.map((tag) => (
+                      {project.tags.map((tag: string) => (
                         <span key={tag} className="project-tag">{tag}</span>
                       ))}
                     </div>
