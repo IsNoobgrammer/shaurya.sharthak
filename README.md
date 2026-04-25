@@ -13,9 +13,9 @@ Research-oriented personal portfolio website built with React, Vite, and Three.j
 - Folder-based blog system directly fetching from a public GitHub repository.
 - Responsive project catalog with category filtering.
 - Dynamic skill grids and verbose interactive About section.
+- **Personality-Driven Theming System:** 12 glassmorphic/brutalist themes with a "Let me be lucky" random generator.
 
 ## TODO / Future Features
-- [ ] **Realtime Clock:** Add dual clocks displaying IST and UTC times.
 - [ ] **UNIX Timestamp Generator:** Copy-to-clipboard widget for current UNIX epoch.
 - [ ] **Handy Tools Section:** Add a dedicated `/tools` section.
   - [ ] Live Base64 Encode/Decode (with auto-detect logic).

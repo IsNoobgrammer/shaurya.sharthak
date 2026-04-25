@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Copy, Palette, Clock3, Timer } from 'lucide-react';
-import { themes, type ThemeId, applyTheme } from '../data/themes';
+import { themes, type ThemeId, applyTheme, LUCKY_THEME_KEY } from '../data/themes';
 
 // ── Time tracking ─────────────────────────────────────────────────────────────
 const TIME_KEY = 'portfolio-total-seconds';
@@ -44,19 +44,19 @@ function useTimeSpent() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function getLocalOffset(): string {
-  const m = -new Date().getTimezoneOffset();
-  const sign = m >= 0 ? '+' : '-';
-  const h = String(Math.floor(Math.abs(m) / 60)).padStart(2, '0');
-  const min = String(Math.abs(m) % 60).padStart(2, '0');
-  return `${sign}${h}:${min}`;
-}
+// function getLocalOffset(): string {
+//   const m = -new Date().getTimezoneOffset();
+//   const sign = m >= 0 ? '+' : '-';
+//   const h = String(Math.floor(Math.abs(m) / 60)).padStart(2, '0');
+//   const min = String(Math.abs(m) % 60).padStart(2, '0');
+//   return `${sign}${h}:${min}`;
+// }
 
-function getLocalTZName(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') ?? 'Local';
-  } catch { return 'Local'; }
-}
+// function getLocalTZName(): string {
+//   try {
+//     return Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()?.replace(/_/g, ' ') ?? 'Local';
+//   } catch { return 'Local'; }
+// }
 
 function fmtTime(d: Date, tz?: string) {
   return new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d);
@@ -159,9 +159,12 @@ interface SettingsPanelProps {
 }
 
 export default function SettingsPanel({ open, onClose, theme, onThemeChange }: SettingsPanelProps) {
-  const localOffset = getLocalOffset();
-  const localTZ = getLocalTZName();
+  // const localOffset = getLocalOffset();
+  // const localTZ = getLocalTZName();
   const { session, lifetime } = useTimeSpent();
+  const [isLucky, setIsLucky] = useState(() => {
+    try { return localStorage.getItem(LUCKY_THEME_KEY) === 'true'; } catch { return false; }
+  });
 
   // Close on Escape
   useEffect(() => {
@@ -207,14 +210,40 @@ export default function SettingsPanel({ open, onClose, theme, onThemeChange }: S
             <div className="settings-section">
               <div className="settings-section-label">Time</div>
               <div className="settings-clocks-row">
-                <ClockWidget label={localTZ} offset={localOffset} />
+                <ClockWidget label="Coordinated Universal Time" tz="UTC" offset="UTC" />
                 <ClockWidget label="Indian Standard Time" tz="Asia/Kolkata" offset="+05:30" />
               </div>
             </div>
 
             {/* Palettes */}
             <div className="settings-section">
-              <div className="settings-section-label">Color Palette</div>
+              <div className="settings-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <div className="settings-section-label" style={{ margin: 0 }}>Color Palette</div>
+                <button
+                  className={`settings-lucky-btn ${isLucky ? 'active' : ''}`}
+                  onClick={() => {
+                    const next = !isLucky;
+                    setIsLucky(next);
+                    try { localStorage.setItem(LUCKY_THEME_KEY, String(next)); } catch {}
+                  }}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: isLucky ? 'var(--glass-bg-hover)' : 'var(--glass-bg)',
+                    color: isLucky ? 'var(--text-accent)' : 'var(--text-secondary)',
+                    border: '1px solid',
+                    borderColor: isLucky ? 'var(--glass-border-hover)' : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}
+                >
+                  <span style={{ fontSize: '0.85rem' }}>🎲</span> Let me be lucky
+                </button>
+              </div>
               <div className="settings-themes-grid">
                 {themes.map(t => (
                   <ThemeCard

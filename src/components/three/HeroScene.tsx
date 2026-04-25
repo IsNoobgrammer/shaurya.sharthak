@@ -32,12 +32,28 @@ interface SceneProps {
 function ParticleField({ gitaForeground, theme }: SceneProps) {
   const pointsRef = useRef<THREE.Points>(null);
   const linesRef = useRef<THREE.LineSegments>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const colors = THEME_COLORS[theme] ?? THEME_COLORS['velvet-purple'];
+  const isLight = theme === 'moonwhite';
   const count = 500;
   const connectionDist = 1.8;
 
-  // Particle positions + velocities
+  // Generate soft glowing particle texture
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d')!;
+    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.2, 'rgba(255,255,255,0.6)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
+  }, []);
+
   const [positions, velocities] = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const vel = new Float32Array(count * 3);
@@ -45,25 +61,22 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
       pos[i * 3]     = (Math.random() - 0.5) * 14;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 6;
-      vel[i * 3]     = (Math.random() - 0.5) * 0.003;
-      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.003;
+      vel[i * 3]     = (Math.random() - 0.5) * 0.002;
+      vel[i * 3 + 1] = (Math.random() - 0.5) * 0.002;
       vel[i * 3 + 2] = (Math.random() - 0.5) * 0.001;
     }
     return [pos, vel];
   }, []);
 
-  // Sizes — varied for depth feel
   const sizes = useMemo(() => {
     const s = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      s[i] = 0.8 + Math.random() * 2.5;
-    }
+    for (let i = 0; i < count; i++) s[i] = 1.0 + Math.random() * 3.5;
     return s;
   }, []);
 
-  // Line geometry — preallocate max possible connections
   const maxLines = 800;
   const linePositions = useMemo(() => new Float32Array(maxLines * 6), []);
+  const lineColors = useMemo(() => new Float32Array(maxLines * 6), []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -74,31 +87,28 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
     return () => window.removeEventListener('mousemove', handler);
   }, []);
 
-  // Update particle color when theme changes
   useEffect(() => {
     if (!pointsRef.current) return;
     (pointsRef.current.material as THREE.PointsMaterial).color.set(colors.particle);
   }, [colors.particle]);
 
-  useEffect(() => {
-    if (!linesRef.current) return;
-    (linesRef.current.material as THREE.LineBasicMaterial).color.set(new THREE.Color(colors.particle));
-    (linesRef.current.material as THREE.LineBasicMaterial).opacity = 0.06;
-  }, [colors.particle]);
-
   useFrame((state) => {
-    if (!pointsRef.current || !linesRef.current) return;
+    if (!pointsRef.current || !linesRef.current || !groupRef.current) return;
     const t = state.clock.getElapsedTime();
     const pos = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    
+    const themeColor = new THREE.Color(colors.particle);
 
-    // Move particles
+    // Slowly rotate the entire field
+    groupRef.current.rotation.y = Math.sin(t * 0.05) * 0.15;
+    groupRef.current.rotation.x = Math.cos(t * 0.07) * 0.05;
+
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      pos[i3]     += velocities[i3]     + Math.sin(t * 0.1 + i) * 0.0003;
-      pos[i3 + 1] += velocities[i3 + 1] + Math.cos(t * 0.08 + i * 0.5) * 0.0003;
+      pos[i3]     += velocities[i3]     + Math.sin(t * 0.1 + i) * 0.0002;
+      pos[i3 + 1] += velocities[i3 + 1] + Math.cos(t * 0.08 + i * 0.5) * 0.0002;
       pos[i3 + 2] += velocities[i3 + 2];
 
-      // Wrap around boundaries
       if (pos[i3] > 7)     pos[i3] = -7;
       if (pos[i3] < -7)    pos[i3] = 7;
       if (pos[i3+1] > 5)   pos[i3+1] = -5;
@@ -108,9 +118,10 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
 
-    // Build connection lines between nearby particles
     let lineIdx = 0;
     const lp = linesRef.current.geometry.attributes.position.array as Float32Array;
+    const lc = linesRef.current.geometry.attributes.color.array as Float32Array;
+
     for (let i = 0; i < count && lineIdx < maxLines; i++) {
       for (let j = i + 1; j < count && lineIdx < maxLines; j++) {
         const dx = pos[i*3] - pos[j*3];
@@ -121,52 +132,81 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
           const li = lineIdx * 6;
           lp[li]   = pos[i*3];   lp[li+1] = pos[i*3+1]; lp[li+2] = pos[i*3+2];
           lp[li+3] = pos[j*3];   lp[li+4] = pos[j*3+1]; lp[li+5] = pos[j*3+2];
+
+          // Fade out based on distance
+          const alpha = (1.0 - Math.sqrt(d2) / connectionDist) * 0.8;
+          let r, g, b;
+          if (isLight) {
+            // Fade to moonwhite bg (#F5F3ED)
+            r = themeColor.r * alpha + 0.96 * (1 - alpha);
+            g = themeColor.g * alpha + 0.95 * (1 - alpha);
+            b = themeColor.b * alpha + 0.93 * (1 - alpha);
+          } else {
+            r = themeColor.r * alpha;
+            g = themeColor.g * alpha;
+            b = themeColor.b * alpha;
+          }
+          lc[li] = r; lc[li+1] = g; lc[li+2] = b;
+          lc[li+3] = r; lc[li+4] = g; lc[li+5] = b;
+          
           lineIdx++;
         }
       }
     }
-    // Zero out remaining
-    for (let k = lineIdx * 6; k < maxLines * 6; k++) lp[k] = 0;
+    // Zero out unused lines
+    for (let k = lineIdx * 6; k < maxLines * 6; k++) {
+      lp[k] = 0; lc[k] = 0;
+    }
+    
     linesRef.current.geometry.attributes.position.needsUpdate = true;
+    linesRef.current.geometry.attributes.color.needsUpdate = true;
     linesRef.current.geometry.setDrawRange(0, lineIdx * 2);
 
-    // Mouse influence
-    pointsRef.current.position.x += (mouseRef.current.x * 0.15 - pointsRef.current.position.x) * 0.04;
-    pointsRef.current.position.y += (mouseRef.current.y * 0.10 - pointsRef.current.position.y) * 0.04;
-    linesRef.current.position.copy(pointsRef.current.position);
+    // Mouse parallax
+    groupRef.current.position.x += (mouseRef.current.x * 0.2 - groupRef.current.position.x) * 0.03;
+    groupRef.current.position.y += (mouseRef.current.y * 0.15 - groupRef.current.position.y) * 0.03;
 
-    // Opacity
     const pMat = pointsRef.current.material as THREE.PointsMaterial;
     const lMat = linesRef.current.material as THREE.LineBasicMaterial;
-    const targetOp = gitaForeground ? 0.12 : 0.55;
-    const targetLineOp = gitaForeground ? 0.02 : 0.06;
+    const targetOp = gitaForeground ? 0.08 : 0.45;
+    const targetLineOp = gitaForeground ? 0.05 : 0.25;
+    
     pMat.opacity += (targetOp - pMat.opacity) * 0.04;
     lMat.opacity += (targetLineOp - lMat.opacity) * 0.04;
   });
 
   return (
-    <>
+    <group ref={groupRef}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} count={count} itemSize={3} />
           <bufferAttribute attach="attributes-size" args={[sizes, 1]} count={count} itemSize={1} />
         </bufferGeometry>
         <pointsMaterial
-          size={0.02}
+          map={particleTexture}
+          size={0.15}
           color={colors.particle}
           transparent
-          opacity={0.55}
-          sizeAttenuation
+          opacity={isLight ? 0.8 : 0.45}
+          blending={isLight ? THREE.NormalBlending : THREE.AdditiveBlending}
           depthWrite={false}
+          sizeAttenuation
         />
       </points>
       <lineSegments ref={linesRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[linePositions, 3]} count={maxLines * 2} itemSize={3} />
+          <bufferAttribute attach="attributes-color" args={[lineColors, 3]} count={maxLines * 2} itemSize={3} />
         </bufferGeometry>
-        <lineBasicMaterial color={colors.particle} transparent opacity={0.06} depthWrite={false} />
+        <lineBasicMaterial 
+          vertexColors 
+          transparent 
+          opacity={isLight ? 0.4 : 0.25} 
+          blending={isLight ? THREE.NormalBlending : THREE.AdditiveBlending} 
+          depthWrite={false} 
+        />
       </lineSegments>
-    </>
+    </group>
   );
 }
 

@@ -1,5 +1,6 @@
-export type ThemeId = 'velvet-purple' | 'moonwhite' | 'midnight-teal' | 'crimson-noir' | 'obsidian' | 'mocha-mint' | 'solar-amber';
+export type ThemeId = 'velvet-purple' | 'moonwhite' | 'midnight-teal' | 'crimson-noir' | 'obsidian' | 'mocha-mint' | 'solar-amber' | 'autumn-rust' | 'terracotta-parchment' | 'antique-marble' | 'slate-matte' | 'silicon-copper';
 export const THEME_KEY = 'portfolio-theme';
+export const LUCKY_THEME_KEY = 'portfolio-lucky-theme';
 
 export interface Theme {
   id: ThemeId;
@@ -91,10 +92,70 @@ export const themes: Theme[] = [
     previewMuted: '#8A7A5A',
     swatches: ['#110F0A', '#F59E0B', '#FBBF24'],
   },
+  {
+    id: 'autumn-rust',
+    name: 'Autumn Rust',
+    description: 'Deep earthy reds and matte browns.',
+    previewBg: '#1A110D',
+    previewCardBg: 'rgba(30, 20, 15, 0.85)',
+    previewAccent: '#D95C3C',
+    previewText: '#E6D3C5',
+    previewMuted: '#8C6C5A',
+    swatches: ['#1A110D', '#D95C3C', '#F27D59'],
+  },
+  {
+    id: 'terracotta-parchment',
+    name: 'Terracotta Parchment',
+    description: 'Matte terracotta on rough off-white paper.',
+    previewBg: '#F5EFE6',
+    previewCardBg: 'rgba(235, 226, 212, 0.9)',
+    previewAccent: '#C05640',
+    previewText: '#2D2422',
+    previewMuted: '#8A7B76',
+    swatches: ['#F5EFE6', '#C05640', '#D97757'],
+  },
+  {
+    id: 'antique-marble',
+    name: 'Antique Marble',
+    description: 'Cold marble and antique brass. Classical brutalism.',
+    previewBg: '#E8E9EB',
+    previewCardBg: 'rgba(220, 222, 225, 0.85)',
+    previewAccent: '#9E8050',
+    previewText: '#1A1C20',
+    previewMuted: '#7A7E85',
+    swatches: ['#E8E9EB', '#9E8050', '#BFA67A'],
+  },
+  {
+    id: 'slate-matte',
+    name: 'Slate Matte',
+    description: 'Understated matte slate gray.',
+    previewBg: '#1C1D21',
+    previewCardBg: 'rgba(35, 37, 43, 0.85)',
+    previewAccent: '#6C7A89',
+    previewText: '#D1D5DB',
+    previewMuted: '#4B5563',
+    swatches: ['#1C1D21', '#6C7A89', '#9CA3AF'],
+  },
+  {
+    id: 'silicon-copper',
+    name: 'Silicon Copper',
+    description: 'PCB green and copper traces. Scrappy hardware feel.',
+    previewBg: '#09100D',
+    previewCardBg: 'rgba(15, 28, 23, 0.85)',
+    previewAccent: '#B87333',
+    previewText: '#CFD9D5',
+    previewMuted: '#47665B',
+    swatches: ['#09100D', '#B87333', '#CD853F'],
+  }
 ];
 
 export function getInitialTheme(): ThemeId {
   try {
+    const isLucky = localStorage.getItem(LUCKY_THEME_KEY) === 'true';
+    if (isLucky) {
+      const randomIndex = Math.floor(Math.random() * themes.length);
+      return themes[randomIndex].id;
+    }
     const s = localStorage.getItem(THEME_KEY) as ThemeId | null;
     if (s && themes.find(t => t.id === s)) return s;
   } catch (_) { /* ignore */ }

@@ -41,7 +41,7 @@ export default function Hero({ theme = 'velvet-purple' }: { theme?: string }) {
   const [gitaMode, setGitaMode] = useState(false);
 
   const scrollToProjects = () => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
-  const scrollToContact  = () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToContact = () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   const toggleGita = useCallback(() => setGitaMode((v) => !v), []);
 
   return (
