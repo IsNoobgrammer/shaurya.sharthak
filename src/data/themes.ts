@@ -1,4 +1,4 @@
-export type ThemeId = 'velvet-purple' | 'moonwhite' | 'midnight-teal' | 'crimson-noir';
+export type ThemeId = 'velvet-purple' | 'moonwhite' | 'midnight-teal' | 'crimson-noir' | 'obsidian' | 'mocha-mint' | 'solar-amber';
 export const THEME_KEY = 'portfolio-theme';
 
 export interface Theme {
@@ -37,6 +37,17 @@ export const themes: Theme[] = [
     swatches: ['#F0EBE0', '#1C1C1C', '#8A8A8A'],
   },
   {
+    id: 'obsidian',
+    name: 'Obsidian Matte',
+    description: 'Pure black. White chalk front. Inverse brutalist.',
+    previewBg: '#0C0C0C',
+    previewCardBg: 'rgba(20,20,20,0.9)',
+    previewAccent: '#E8E8E8',
+    previewText: '#F5F5F5',
+    previewMuted: '#6B6B6B',
+    swatches: ['#0C0C0C', '#E8E8E8', '#999999'],
+  },
+  {
     id: 'midnight-teal',
     name: 'Midnight Teal',
     description: 'Deep ocean dark. Teal luminescence.',
@@ -57,6 +68,28 @@ export const themes: Theme[] = [
     previewText: '#F0E8EB',
     previewMuted: '#6A4555',
     swatches: ['#0A0608', '#E11D48', '#FB7185'],
+  },
+  {
+    id: 'mocha-mint',
+    name: 'Mocha Mint',
+    description: 'Deep navy. Matcha-green funk.',
+    previewBg: '#0A0E1A',
+    previewCardBg: 'rgba(14,20,38,0.85)',
+    previewAccent: '#86EFAC',
+    previewText: '#E2E8F0',
+    previewMuted: '#4A6670',
+    swatches: ['#0A0E1A', '#86EFAC', '#4ADE80'],
+  },
+  {
+    id: 'solar-amber',
+    name: 'Solar Amber',
+    description: 'Charcoal warmth. Golden hour glow.',
+    previewBg: '#110F0A',
+    previewCardBg: 'rgba(22,20,16,0.85)',
+    previewAccent: '#F59E0B',
+    previewText: '#F5F0E8',
+    previewMuted: '#8A7A5A',
+    swatches: ['#110F0A', '#F59E0B', '#FBBF24'],
   },
 ];
 

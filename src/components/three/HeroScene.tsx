@@ -16,8 +16,11 @@ const GITA_LINES = [
 const THEME_COLORS: Record<string, { particle: string; textFill: string; textShadow: string }> = {
   'velvet-purple': { particle: '#A78BFA', textFill: 'rgba(200,170,255,1.0)', textShadow: 'rgba(167,139,250,0.8)' },
   'moonwhite':     { particle: '#2D2D2D', textFill: 'rgba(20,20,20,0.9)',    textShadow: 'rgba(28,28,28,0.35)' },
+  'obsidian':      { particle: '#999999', textFill: 'rgba(232,232,232,0.9)', textShadow: 'rgba(200,200,200,0.4)' },
   'midnight-teal': { particle: '#2DD4BF', textFill: 'rgba(94,234,212,1.0)',  textShadow: 'rgba(20,184,166,0.8)' },
   'crimson-noir':  { particle: '#E11D48', textFill: 'rgba(253,164,175,1.0)', textShadow: 'rgba(190,18,60,0.8)' },
+  'mocha-mint':    { particle: '#86EFAC', textFill: 'rgba(134,239,172,1.0)', textShadow: 'rgba(74,222,128,0.7)' },
+  'solar-amber':   { particle: '#FBBF24', textFill: 'rgba(251,191,36,1.0)',  textShadow: 'rgba(245,158,11,0.7)' },
 };
 
 interface SceneProps {

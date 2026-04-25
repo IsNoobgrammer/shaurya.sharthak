@@ -1736,7 +1736,7 @@ a:hover {
 /* ── Theme Cards ── */
 .settings-themes-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 0.75rem;
 }
 
@@ -2204,3 +2204,105 @@ a:hover {
   color: var(--text-accent);
   letter-spacing: 0.04em;
 }
+
+/* ════════════════════════════════════════════
+   THEME: OBSIDIAN MATTE
+   ════════════════════════════════════════════ */
+[data-theme="obsidian"] {
+  --bg-primary: #0C0C0C;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1A1A1A;
+  --bg-card: rgba(20, 20, 20, 0.85);
+
+  --purple-300: #F5F5F5;
+  --purple-400: #E8E8E8;
+  --purple-500: #D0D0D0;
+  --purple-600: #999999;
+  --purple-700: #666666;
+
+  --text-primary: #F5F5F5;
+  --text-secondary: #B0B0B0;
+  --text-muted: #6B6B6B;
+  --text-accent: #E8E8E8;
+
+  --glass-border: rgba(232, 232, 232, 0.1);
+  --glass-border-hover: rgba(232, 232, 232, 0.25);
+  --glass-bg: rgba(232, 232, 232, 0.03);
+  --glass-bg-hover: rgba(232, 232, 232, 0.07);
+
+  --gradient-purple: linear-gradient(135deg, #999999, #E8E8E8);
+  --gradient-hero: radial-gradient(ellipse at 50% 0%, rgba(232, 232, 232, 0.06) 0%, transparent 60%);
+
+  --shadow-purple: 0 0 40px rgba(232, 232, 232, 0.06);
+}
+
+[data-theme="obsidian"] ::-webkit-scrollbar-thumb { background: #444444; }
+[data-theme="obsidian"] ::selection { background: rgba(232,232,232,0.18); color: #0C0C0C; }
+
+/* ════════════════════════════════════════════
+   THEME: MOCHA MINT
+   ════════════════════════════════════════════ */
+[data-theme="mocha-mint"] {
+  --bg-primary: #0A0E1A;
+  --bg-secondary: #0E1424;
+  --bg-tertiary: #131A2E;
+  --bg-card: rgba(14, 20, 38, 0.75);
+
+  --purple-300: #BBF7D0;
+  --purple-400: #86EFAC;
+  --purple-500: #4ADE80;
+  --purple-600: #22C55E;
+  --purple-700: #16A34A;
+
+  --text-primary: #E2E8F0;
+  --text-secondary: #8BA8A0;
+  --text-muted: #4A6670;
+  --text-accent: #86EFAC;
+
+  --glass-border: rgba(74, 222, 128, 0.1);
+  --glass-border-hover: rgba(74, 222, 128, 0.25);
+  --glass-bg: rgba(74, 222, 128, 0.04);
+  --glass-bg-hover: rgba(74, 222, 128, 0.08);
+
+  --gradient-purple: linear-gradient(135deg, #22C55E, #86EFAC);
+  --gradient-hero: radial-gradient(ellipse at 50% 0%, rgba(74, 222, 128, 0.12) 0%, transparent 60%);
+
+  --shadow-purple: 0 0 40px rgba(74, 222, 128, 0.15);
+}
+
+[data-theme="mocha-mint"] ::-webkit-scrollbar-thumb { background: #16A34A; }
+[data-theme="mocha-mint"] ::selection { background: rgba(74,222,128,0.2); }
+
+/* ════════════════════════════════════════════
+   THEME: SOLAR AMBER
+   ════════════════════════════════════════════ */
+[data-theme="solar-amber"] {
+  --bg-primary: #110F0A;
+  --bg-secondary: #1A1710;
+  --bg-tertiary: #221E14;
+  --bg-card: rgba(22, 20, 16, 0.75);
+
+  --purple-300: #FDE68A;
+  --purple-400: #FBBF24;
+  --purple-500: #F59E0B;
+  --purple-600: #D97706;
+  --purple-700: #B45309;
+
+  --text-primary: #F5F0E8;
+  --text-secondary: #B0A080;
+  --text-muted: #8A7A5A;
+  --text-accent: #FBBF24;
+
+  --glass-border: rgba(245, 158, 11, 0.12);
+  --glass-border-hover: rgba(245, 158, 11, 0.28);
+  --glass-bg: rgba(245, 158, 11, 0.04);
+  --glass-bg-hover: rgba(245, 158, 11, 0.08);
+
+  --gradient-purple: linear-gradient(135deg, #D97706, #FBBF24);
+  --gradient-hero: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.14) 0%, transparent 60%);
+
+  --shadow-purple: 0 0 40px rgba(245, 158, 11, 0.15);
+}
+
+[data-theme="solar-amber"] ::-webkit-scrollbar-thumb { background: #B45309; }
+[data-theme="solar-amber"] ::selection { background: rgba(245,158,11,0.22); }
