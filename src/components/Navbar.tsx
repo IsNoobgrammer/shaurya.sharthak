@@ -128,7 +128,7 @@ export default function Navbar() {
               </li>
             ))}
             <li>
-              <a href="/resumes/Shaurya_AI_ML_Resume.pdf" download>
+              <a href={resumeRoles[0].file} download>
                 <FileText size={14} style={{ marginRight: 6 }} />
                 Download Resume
               </a>

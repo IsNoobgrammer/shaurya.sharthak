@@ -1,19 +1,168 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { Code2, ExternalLink, Star, GitFork, ChevronLeft, ChevronRight } from 'lucide-react';
-import { projects, type ProjectCategory } from '../data/projects';
+import {
+  Code2, ExternalLink, Star, GitFork,
+  ChevronLeft, ChevronRight, ArrowLeft, X, Tag, Info, Layers
+} from 'lucide-react';
+import { projects, type Project, type ProjectCategory } from '../data/projects';
 
 type Filter = 'All' | ProjectCategory;
 const filters: Filter[] = ['All', 'Research', 'Infrastructure', 'Tokenizers', 'Datasets', 'Tools', 'Security'];
 
-
 const CARDS_PER_VIEW = 3;
 const AUTO_SLIDE_MS = 3200;
 
+// ── Project Reader Panel ──────────────────────────────────────────────────────
+function ProjectReader({ project, onClose }: { project: Project; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const isGitHub = project.platform === 'github';
+  const platformLabel = isGitHub ? 'GitHub' : 'HuggingFace';
+  const PlatformIcon = () => isGitHub
+    ? <Code2 size={14} />
+    : <span style={{ fontSize: '0.9rem', lineHeight: 1 }}>🤗</span>;
+
+  return (
+    <motion.div
+      className="blog-reader-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        className="blog-reader-panel"
+        initial={{ x: '100%', opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: '100%', opacity: 0 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+      >
+        {/* ── Top bar ── */}
+        <div className="blog-reader-header">
+          <button className="blog-reader-back" onClick={onClose} aria-label="Close">
+            <ArrowLeft size={16} />
+            <span>Back</span>
+          </button>
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="blog-reader-github"
+          >
+            <PlatformIcon />
+            {platformLabel}
+            <ExternalLink size={12} style={{ marginLeft: 2 }} />
+          </a>
+          <button className="blog-reader-close" onClick={onClose} aria-label="Close">
+            <X size={17} />
+          </button>
+        </div>
+
+        {/* ── Hero zone ── */}
+        <div className="project-reader-hero">
+          {/* Badges row */}
+          <div style={{ display: 'flex', gap: '0.45rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span className="project-category-badge">{project.category}</span>
+            {project.featured && (
+              <span className="project-category-badge" style={{
+                color: '#F59E0B',
+                borderColor: 'rgba(245,158,11,0.2)',
+                background: 'rgba(245,158,11,0.07)'
+              }}>
+                ⭐ Featured
+              </span>
+            )}
+            <span className="project-category-badge" style={{ marginLeft: 'auto', opacity: 0.65 }}>
+              <PlatformIcon /> {platformLabel}
+            </span>
+          </div>
+
+          <h1 className="blog-reader-title" style={{ marginBottom: '0.5rem' }}>{project.title}</h1>
+
+          {/* Stats chips */}
+          {(project.stars !== undefined || project.forks !== undefined) && (
+            <div className="project-reader-stats">
+              {project.stars !== undefined && (
+                <span className="project-reader-stat-chip">
+                  <Star size={11} style={{ color: '#F59E0B' }} /> {project.stars} stars
+                </span>
+              )}
+              {project.forks !== undefined && (
+                <span className="project-reader-stat-chip">
+                  <GitFork size={11} /> {project.forks} forks
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Scrollable content ── */}
+        <div className="blog-reader-content">
+
+          {/* About */}
+          <div className="project-reader-section">
+            <div className="project-reader-section-label">
+              <Info size={11} /> About
+            </div>
+            <p className="project-reader-description">{project.description}</p>
+          </div>
+
+          {/* Deep dive (details) */}
+          {project.details && (
+            <div className="project-reader-section">
+              <div className="project-reader-section-label">
+                <Layers size={11} /> Deep Dive
+              </div>
+              <p className="project-reader-description">{project.details}</p>
+            </div>
+          )}
+
+          {/* Tech stack */}
+          <div className="project-reader-section">
+            <div className="project-reader-section-label">
+              <Tag size={11} /> Tech Stack
+            </div>
+            <div className="project-reader-tags">
+              {project.tags.map((tag) => (
+                <span key={tag} className="project-reader-tag">{tag}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="project-reader-cta">
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+            >
+              <PlatformIcon />
+              View on {platformLabel}
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ── Main Projects Component ───────────────────────────────────────────────────
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState<Filter>('All');
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -23,158 +172,170 @@ export default function Projects() {
 
   const maxIndex = Math.max(0, filtered.length - CARDS_PER_VIEW);
 
-  // Reset index when filter changes
   useEffect(() => { setIndex(0); }, [activeFilter]);
 
   const next = useCallback(() => setIndex((i) => Math.min(i + 1, maxIndex)), [maxIndex]);
   const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
 
-  // Auto-slide
+  const isReaderOpen = activeProject !== null;
+
   useEffect(() => {
-    if (paused) return;
+    if (paused || isReaderOpen) return;
     timerRef.current = setInterval(() => {
       setIndex((i) => (i >= maxIndex ? 0 : i + 1));
     }, AUTO_SLIDE_MS);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, maxIndex, activeFilter]);
+  }, [paused, maxIndex, activeFilter, isReaderOpen]);
 
   const visibleCards = filtered.slice(index, index + CARDS_PER_VIEW);
-  // Pad to CARDS_PER_VIEW to prevent layout shift
   const padded = [...visibleCards, ...Array(Math.max(0, CARDS_PER_VIEW - visibleCards.length)).fill(null)];
 
+  const closeReader = useCallback(() => setActiveProject(null), []);
+
   return (
-    <section id="projects" className="section" ref={ref}>
-      <div className="container">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">Projects & Datasets</h2>
-          <p className="section-subtitle">What I've built — {filtered.length} items.</p>
-        </motion.div>
-
-        {/* Filter tabs */}
-        <motion.div
-          className="project-filters"
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.1 }}
-        >
-          {filters.map((f) => (
-            <button
-              key={f}
-              id={`filter-${f.toLowerCase()}`}
-              className={`filter-btn${activeFilter === f ? ' active' : ''}`}
-              onClick={() => setActiveFilter(f)}
-            >
-              {f}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Carousel wrapper */}
-        <div
-          className="carousel-wrapper"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          {/* Prev arrow */}
-          <button
-            className="carousel-arrow carousel-arrow-left"
-            onClick={prev}
-            disabled={index === 0}
-            aria-label="Previous projects"
+    <>
+      <section id="projects" className="section" ref={ref}>
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
           >
-            <ChevronLeft size={20} />
-          </button>
+            <h2 className="section-title">Projects & Datasets</h2>
+            <p className="section-subtitle">
+              What I've built — {filtered.length} items. Click any card to explore.
+            </p>
+          </motion.div>
 
-          {/* Cards */}
-          <div className="carousel-track">
-            <AnimatePresence mode="popLayout">
-              {padded.map((project, i) =>
-                project ? (
-                  <motion.div
-                    key={`${project.id}-${index}`}
-                    className="glass-card project-card"
-                    layout
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    transition={{ duration: 0.3, delay: i * 0.05 }}
-                  >
-                    <div className="project-header">
-                      <span className="project-title">{project.title}</span>
-                      <span className="project-icon">
-                        {project.platform === 'github' ? (
-                          <Code2 size={18} />
-                        ) : (
-                          <span style={{ fontSize: '1.1rem' }}>🤗</span>
+          {/* Filter tabs */}
+          <motion.div
+            className="project-filters"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.1 }}
+          >
+            {filters.map((f) => (
+              <button
+                key={f}
+                id={`filter-${f.toLowerCase()}`}
+                className={`filter-btn${activeFilter === f ? ' active' : ''}`}
+                onClick={() => setActiveFilter(f)}
+              >
+                {f}
+              </button>
+            ))}
+          </motion.div>
+
+          {/* Carousel */}
+          <div
+            className="carousel-wrapper"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+          >
+            <button
+              className="carousel-arrow carousel-arrow-left"
+              onClick={prev}
+              disabled={index === 0}
+              aria-label="Previous projects"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="carousel-track">
+              <AnimatePresence mode="popLayout">
+                {padded.map((project, i) =>
+                  project ? (
+                    <motion.div
+                      key={`${project.id}-${index}`}
+                      className="glass-card project-card"
+                      layout
+                      initial={{ opacity: 0, x: 40 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -40 }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      onClick={() => setActiveProject(project)}
+                      id={`project-card-${project.id}`}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter') setActiveProject(project); }}
+                    >
+                      {/* Category badge */}
+                      <span className="project-category-badge">{project.category}</span>
+
+                      <div className="project-header">
+                        <span className="project-title">{project.title}</span>
+                        <span className="project-icon">
+                          {project.platform === 'github'
+                            ? <Code2 size={17} />
+                            : <span style={{ fontSize: '1.05rem' }}>🤗</span>}
+                        </span>
+                      </div>
+
+                      <p className="project-description">{project.description}</p>
+
+                      <div className="project-tags">
+                        {project.tags.slice(0, 4).map((tag) => (
+                          <span key={tag} className="project-tag">{tag}</span>
+                        ))}
+                        {project.tags.length > 4 && (
+                          <span className="project-tag">+{project.tags.length - 4}</span>
                         )}
-                      </span>
-                    </div>
-                    <p className="project-description">{project.description}</p>
-                    <div className="project-tags">
-                      {project.tags.map((tag: string) => (
-                        <span key={tag} className="project-tag">{tag}</span>
-                      ))}
-                    </div>
-                    <div className="project-footer">
-                      {project.stars !== undefined && (
-                        <span className="project-stat">
-                          <Star size={12} style={{ color: '#F59E0B' }} />
-                          {project.stars}
+                      </div>
+
+                      <div className="project-footer">
+                        {project.stars !== undefined && (
+                          <span className="project-stat">
+                            <Star size={11} style={{ color: '#F59E0B' }} />
+                            {project.stars}
+                          </span>
+                        )}
+                        {project.forks !== undefined && (
+                          <span className="project-stat">
+                            <GitFork size={11} />
+                            {project.forks}
+                          </span>
+                        )}
+                        <span className="project-link">
+                          Expand <ExternalLink size={11} />
                         </span>
-                      )}
-                      {project.forks !== undefined && (
-                        <span className="project-stat">
-                          <GitFork size={12} />
-                          {project.forks}
-                        </span>
-                      )}
-                      <a
-                        href={project.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="project-link"
-                        id={`project-link-${project.id}`}
-                      >
-                        View <ExternalLink size={12} />
-                      </a>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <div key={`pad-${i}`} className="project-card-placeholder" />
-                )
-              )}
-            </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div key={`pad-${i}`} className="project-card-placeholder" />
+                  )
+                )}
+              </AnimatePresence>
+            </div>
+
+            <button
+              className="carousel-arrow carousel-arrow-right"
+              onClick={next}
+              disabled={index >= maxIndex}
+              aria-label="Next projects"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
 
-          {/* Next arrow */}
-          <button
-            className="carousel-arrow carousel-arrow-right"
-            onClick={next}
-            disabled={index >= maxIndex}
-            aria-label="Next projects"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
+          {/* Dots */}
+          <div className="carousel-dots">
+            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              <button
+                key={i}
+                className={`carousel-dot${i === index ? ' active' : ''}`}
+                onClick={() => setIndex(i)}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
 
-        {/* Dots */}
-        <div className="carousel-dots">
-          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-            <button
-              key={i}
-              className={`carousel-dot${i === index ? ' active' : ''}`}
-              onClick={() => setIndex(i)}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
+          <p className="carousel-hint">Click card to explore · Hover to pause · Arrows to navigate</p>
         </div>
+      </section>
 
-        <p className="carousel-hint">Hover to pause · Click arrows to navigate</p>
-      </div>
-    </section>
+      <AnimatePresence>
+        {activeProject && <ProjectReader project={activeProject} onClose={closeReader} />}
+      </AnimatePresence>
+    </>
   );
 }
