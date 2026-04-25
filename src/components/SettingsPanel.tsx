@@ -77,11 +77,11 @@ function ThemeCard({ theme, active, onSelect }: { theme: typeof themes[0]; activ
         {/* Fake navbar */}
         <div style={{ height: 8, borderBottom: `1px solid ${theme.previewAccent}22`, display: 'flex', alignItems: 'center', padding: '0 6px', gap: 3 }}>
           <span style={{ width: 20, height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${theme.previewAccent}, ${theme.swatches[2]})` }} />
-          {[1,2,3].map(i => <span key={i} style={{ flex: 1, height: 2, borderRadius: 1, background: theme.previewMuted + '55' }} />)}
+          {[1, 2, 3].map(i => <span key={i} style={{ flex: 1, height: 2, borderRadius: 1, background: theme.previewMuted + '55' }} />)}
         </div>
         {/* Fake glass cards */}
         <div style={{ padding: '4px 6px', display: 'flex', gap: 4 }}>
-          {[1,2].map(i => (
+          {[1, 2].map(i => (
             <div key={i} style={{ flex: 1, background: theme.previewCardBg, border: `1px solid ${theme.previewAccent}22`, borderRadius: 4, padding: '4px 5px' }}>
               <div style={{ height: 3, width: '60%', background: theme.previewText, borderRadius: 2, marginBottom: 3 }} />
               <div style={{ height: 2, width: '85%', background: theme.previewMuted + '88', borderRadius: 1, marginBottom: 2 }} />
@@ -121,7 +121,6 @@ interface SettingsPanelProps {
 export default function SettingsPanel({ open, onClose, theme, onThemeChange }: SettingsPanelProps) {
   const localOffset = getLocalOffset();
   const localTZ = getLocalTZName();
-  const isLocalIST = localOffset === '+05:30';
 
   // Close on Escape
   useEffect(() => {
@@ -167,11 +166,8 @@ export default function SettingsPanel({ open, onClose, theme, onThemeChange }: S
             <div className="settings-section">
               <div className="settings-section-label">Time</div>
               <div className="settings-clocks-row">
-                <ClockWidget label="IST" tz="Asia/Kolkata" offset="+05:30" />
-                {isLocalIST
-                  ? <ClockWidget label={localTZ} offset={localOffset} />
-                  : <ClockWidget label={localTZ} offset={localOffset} />
-                }
+                <ClockWidget label={localTZ} offset={localOffset} />
+                <ClockWidget label="Indian Standard Time" tz="Asia/Kolkata" offset="+05:30" />
               </div>
             </div>
 

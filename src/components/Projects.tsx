@@ -259,6 +259,8 @@ export default function Projects() {
                       tabIndex={0}
                       onKeyDown={(e) => { if (e.key === 'Enter') setActiveProject(project); }}
                     >
+                      {/* Faded index number */}
+                      <span className="project-card-index">{String(index + i + 1).padStart(2, '0')}</span>
                       {/* Category badge */}
                       <span className="project-category-badge">{project.category}</span>
 
@@ -317,7 +319,10 @@ export default function Projects() {
             </button>
           </div>
 
-          {/* Dots */}
+          {/* Progress bar + Dots */}
+          <div className="carousel-progress">
+            <div className="carousel-progress-fill" style={{ width: `${((index + 1) / (maxIndex + 1)) * 100}%` }} />
+          </div>
           <div className="carousel-dots">
             {Array.from({ length: maxIndex + 1 }).map((_, i) => (
               <button

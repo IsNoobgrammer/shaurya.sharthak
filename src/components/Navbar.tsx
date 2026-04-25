@@ -49,7 +49,7 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
           title="Settings"
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
         >
-          <span>Shaurya</span>.Sharthak
+          <span className="navbar-logo-text"><span>Shaurya</span>.Sharthak</span>
           <span className="navbar-logo-gear">⚙</span>
         </button>
 

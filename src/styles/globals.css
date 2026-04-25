@@ -214,7 +214,7 @@ a:hover {
   color: var(--purple-300);
 }
 
-.navbar-logo > span:first-child {
+.navbar-logo-text > span {
   color: var(--purple-400);
 }
 
@@ -1942,3 +1942,215 @@ a:hover {
 
 [data-theme="crimson-noir"] ::-webkit-scrollbar-thumb { background: #9F1239; }
 [data-theme="crimson-noir"] ::selection { background: rgba(190,18,60,0.25); }
+
+/* ════════════════════════════════════════════
+   MOONWHITE — HERO & EASTER EGG OVERRIDES
+   ════════════════════════════════════════════ */
+[data-theme="moonwhite"] .hero::before {
+  background: radial-gradient(ellipse at 50% 0%, rgba(28, 28, 28, 0.06) 0%, transparent 60%);
+}
+
+[data-theme="moonwhite"] .hero-gradient {
+  background: radial-gradient(ellipse at 50% 0%, rgba(28, 28, 28, 0.05) 0%, transparent 70%);
+}
+
+[data-theme="moonwhite"] .gita-overlay::before {
+  background: rgba(240, 235, 224, 0.88);
+  border-color: rgba(28, 28, 28, 0.12);
+}
+
+[data-theme="moonwhite"] .gita-verse-line {
+  color: rgba(10, 10, 10, 0.95);
+  text-shadow: 0 0 20px rgba(28, 28, 28, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="moonwhite"] .gita-translation {
+  color: rgba(40, 40, 40, 0.82);
+}
+
+[data-theme="moonwhite"] .gita-source {
+  color: rgba(28, 28, 28, 0.5);
+}
+
+/* Egg button — uses CSS vars so all themes work */
+.egg-btn.active {
+  filter: drop-shadow(0 0 8px var(--purple-400));
+}
+
+/* ════════════════════════════════════════════
+   BLOG — AESTHETIC IMPROVEMENTS
+   ════════════════════════════════════════════ */
+
+/* Left accent border on hover */
+.blog-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.blog-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  background: var(--gradient-purple);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.blog-card:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Reading time badge */
+.blog-reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+}
+
+/* Blog date row — flex with reading time */
+.blog-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* Excerpt brightens on hover */
+.blog-card:hover .blog-excerpt {
+  color: var(--text-secondary);
+}
+
+/* Section index number (large faded) */
+.blog-card-index {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 3.5rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--purple-400);
+  opacity: 0.04;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.blog-card:hover .blog-card-index {
+  opacity: 0.08;
+}
+
+/* ════════════════════════════════════════════
+   PROJECTS — AESTHETIC IMPROVEMENTS
+   ════════════════════════════════════════════ */
+
+/* Gradient fade on carousel edges */
+.carousel-wrapper {
+  position: relative;
+}
+
+.carousel-wrapper::before,
+.carousel-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.carousel-wrapper::before {
+  left: 40px;
+  background: linear-gradient(to right, var(--bg-primary), transparent);
+}
+
+.carousel-wrapper::after {
+  right: 40px;
+  background: linear-gradient(to left, var(--bg-primary), transparent);
+}
+
+/* Project card — large index number behind content */
+.project-card-index {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  font-size: 4rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--purple-400);
+  opacity: 0.04;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.project-card:hover .project-card-index {
+  opacity: 0.09;
+}
+
+/* Subtle 3D tilt feel on project card hover */
+.project-card {
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.project-card:hover {
+  transform: perspective(900px) rotateY(-3deg) rotateX(1deg) translateY(-4px);
+}
+
+/* Progress bar instead of just dots — appears above dots */
+.carousel-progress {
+  width: 100%;
+  height: 2px;
+  background: var(--glass-border);
+  border-radius: 1px;
+  margin: 0.75rem auto 0.5rem;
+  max-width: 240px;
+  overflow: hidden;
+}
+
+.carousel-progress-fill {
+  height: 100%;
+  background: var(--gradient-purple);
+  border-radius: 1px;
+  transition: width 0.35s ease;
+}
+
+/* ════════════════════════════════════════════
+   SECTION TITLE — ACCENT LINE ANIMATION
+   ════════════════════════════════════════════ */
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--gradient-purple);
+  border-radius: 1px;
+  transition: width 0.4s ease;
+}
+
+.section:hover .section-title::after {
+  width: 100%;
+}

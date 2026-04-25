@@ -28,7 +28,7 @@ export default function App() {
     <>
       <Navbar onLogoClick={() => setSettingsOpen(true)} />
       <main>
-        <Hero />
+        <Hero theme={theme} />
         <About />
         <Publication />
         <Projects />

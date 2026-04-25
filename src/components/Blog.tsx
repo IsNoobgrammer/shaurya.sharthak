@@ -252,35 +252,47 @@ export default function Blog() {
           {/* Post list */}
           {posts && posts.length > 0 && (
             <div className="blog-list">
-              {posts.map((post, i) => (
-                <motion.button
-                  key={post.slug}
-                  className="glass-card blog-card"
-                  onClick={() => setActive(post)}
-                  id={`blog-card-${post.slug}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.4, delay: i * 0.07 }}
-                  style={{ textAlign: 'left', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  <div className="blog-card-inner">
-                    <div className="blog-card-header">
-                      <h3 className="blog-card-title">{post.title}</h3>
-                      {post.date && (
-                        <span className="blog-date">
-                          <Calendar size={12} />
-                          {post.date}
-                        </span>
-                      )}
+              {posts.map((post, i) => {
+                const wordCount = post.rawContent?.split(/\s+/).length ?? 0;
+                const readMins = wordCount > 0 ? Math.max(1, Math.round(wordCount / 200)) : null;
+                return (
+                  <motion.button
+                    key={post.slug}
+                    className="glass-card blog-card"
+                    onClick={() => setActive(post)}
+                    id={`blog-card-${post.slug}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={inView ? { opacity: 1, y: 0 } : {}}
+                    whileHover={{ x: 5, transition: { duration: 0.2 } }}
+                    transition={{ duration: 0.4, delay: i * 0.07 }}
+                    style={{ textAlign: 'left', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    {/* Faded index number */}
+                    <span className="blog-card-index">{String(i + 1).padStart(2, '0')}</span>
+                    <div className="blog-card-inner">
+                      <div className="blog-card-header">
+                        <h3 className="blog-card-title">{post.title}</h3>
+                        <div className="blog-meta-row">
+                          {post.date && (
+                            <span className="blog-date">
+                              <Calendar size={12} />
+                              {post.date}
+                            </span>
+                          )}
+                          {readMins && (
+                            <span className="blog-reading-time">⏱ {readMins} min read</span>
+                          )}
+                        </div>
+                      </div>
+                      {post.excerpt && <p className="blog-excerpt">{post.excerpt}</p>}
+                      <span className="blog-read-more">
+                        <BookOpen size={13} />
+                        Read here
+                      </span>
                     </div>
-                    {post.excerpt && <p className="blog-excerpt">{post.excerpt}</p>}
-                    <span className="blog-read-more">
-                      <BookOpen size={13} />
-                      Read here
-                    </span>
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                );
+              })}
             </div>
           )}
 

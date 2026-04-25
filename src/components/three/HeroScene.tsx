@@ -2,7 +2,6 @@ import { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Gita verse transliteration — all 8 lines
 const GITA_LINES = [
   'Yadā yadā hi dharmasya',
   'glānir bhavati bhārata',
@@ -14,13 +13,22 @@ const GITA_LINES = [
   'sambhavāmi yuge yuge',
 ];
 
+const THEME_COLORS: Record<string, { particle: string; textFill: string; textShadow: string }> = {
+  'velvet-purple': { particle: '#A78BFA', textFill: 'rgba(200,170,255,1.0)', textShadow: 'rgba(167,139,250,0.8)' },
+  'moonwhite':     { particle: '#2D2D2D', textFill: 'rgba(20,20,20,0.9)',    textShadow: 'rgba(28,28,28,0.35)' },
+  'midnight-teal': { particle: '#2DD4BF', textFill: 'rgba(94,234,212,1.0)',  textShadow: 'rgba(20,184,166,0.8)' },
+  'crimson-noir':  { particle: '#E11D48', textFill: 'rgba(253,164,175,1.0)', textShadow: 'rgba(190,18,60,0.8)' },
+};
+
 interface SceneProps {
   gitaForeground: boolean;
+  theme: string;
 }
 
-function Particles({ gitaForeground }: SceneProps) {
+function Particles({ gitaForeground, theme }: SceneProps) {
   const meshRef = useRef<THREE.Points>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const colors = THEME_COLORS[theme] ?? THEME_COLORS['velvet-purple'];
 
   const [positions, count] = useMemo(() => {
     const n = 600;
@@ -42,6 +50,12 @@ function Particles({ gitaForeground }: SceneProps) {
     return () => window.removeEventListener('mousemove', handler);
   }, []);
 
+  // Update particle color when theme changes
+  useEffect(() => {
+    if (!meshRef.current) return;
+    (meshRef.current.material as THREE.PointsMaterial).color.set(colors.particle);
+  }, [colors.particle]);
+
   useFrame((state) => {
     if (!meshRef.current) return;
     const t = state.clock.getElapsedTime();
@@ -57,30 +71,18 @@ function Particles({ gitaForeground }: SceneProps) {
   return (
     <points ref={meshRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-          count={count}
-          itemSize={3}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={count} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.022}
-        color="#A78BFA"
-        transparent
-        opacity={0.5}
-        sizeAttenuation
-        depthWrite={false}
-      />
+      <pointsMaterial size={0.022} color={colors.particle} transparent opacity={0.5} sizeAttenuation depthWrite={false} />
     </points>
   );
 }
 
-// Sanskrit text planes — rendered as WebGL canvas textures
-function GitaText({ gitaForeground }: SceneProps) {
+function GitaText({ gitaForeground, theme }: SceneProps) {
   const { viewport } = useThree();
   const groupRef = useRef<THREE.Group>(null);
   const initialYRef = useRef<number[]>([]);
+  const colors = THEME_COLORS[theme] ?? THEME_COLORS['velvet-purple'];
 
   const textMeshes = useMemo(() => {
     return GITA_LINES.map((line, i) => {
@@ -90,23 +92,17 @@ function GitaText({ gitaForeground }: SceneProps) {
       const ctx = canvas.getContext('2d')!;
       ctx.clearRect(0, 0, 1024, 96);
       ctx.font = '600 30px Georgia, serif';
-      ctx.fillStyle = 'rgba(200, 170, 255, 1.0)';
+      ctx.fillStyle = colors.textFill;
       ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(167, 139, 250, 0.8)';
+      ctx.shadowColor = colors.textShadow;
       ctx.shadowBlur = 12;
       ctx.fillText(line, 512, 64);
 
       const texture = new THREE.CanvasTexture(canvas);
       const geometry = new THREE.PlaneGeometry(7, 0.55);
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.0,
-        depthWrite: false,
-      });
+      const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0.0, depthWrite: false });
 
-      // Aesthetically placed: cascading diagonally from top-right to bottom-left
-      const col = i % 2; // alternating left/right lean
+      const col = i % 2;
       const x = col === 0 ? -1.2 : 1.2;
       const ySpread = viewport.height * 0.8;
       const y = ySpread * 0.45 - i * (ySpread / (GITA_LINES.length - 1));
@@ -114,12 +110,9 @@ function GitaText({ gitaForeground }: SceneProps) {
 
       return { geometry, material, x, y, z };
     });
-  }, [viewport.height]);
+  }, [viewport.height, colors.textFill, colors.textShadow]);
 
-  // Store initial Y positions for drift reset
-  useEffect(() => {
-    initialYRef.current = textMeshes.map((tm) => tm.y);
-  }, [textMeshes]);
+  useEffect(() => { initialYRef.current = textMeshes.map((tm) => tm.y); }, [textMeshes]);
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -127,31 +120,19 @@ function GitaText({ gitaForeground }: SceneProps) {
     groupRef.current.children.forEach((child, i) => {
       const mesh = child as THREE.Mesh;
       const mat = mesh.material as THREE.MeshBasicMaterial;
-
-      // Target opacity: bg mode = 0.25-0.45 pulse, fg mode = 0.75-0.95 pulse
       const base = gitaForeground ? 0.80 : 0.30;
       const amp  = gitaForeground ? 0.10 : 0.12;
-      const targetOp = base + Math.sin(t * 0.18 + i * 0.9) * amp;
-      mat.opacity += (targetOp - mat.opacity) * 0.03;
-
-      // Very slow upward drift
+      mat.opacity += (base + Math.sin(t * 0.18 + i * 0.9) * amp - mat.opacity) * 0.03;
       mesh.position.y += 0.00025;
       const initY = initialYRef.current[i] ?? 0;
-      if (mesh.position.y > initY + viewport.height * 0.55) {
-        mesh.position.y = initY - viewport.height * 0.2;
-      }
+      if (mesh.position.y > initY + viewport.height * 0.55) mesh.position.y = initY - viewport.height * 0.2;
     });
   });
 
   return (
     <group ref={groupRef}>
       {textMeshes.map((tm, i) => (
-        <mesh
-          key={i}
-          geometry={tm.geometry}
-          material={tm.material}
-          position={[tm.x, tm.y, tm.z]}
-        />
+        <mesh key={i} geometry={tm.geometry} material={tm.material} position={[tm.x, tm.y, tm.z]} />
       ))}
     </group>
   );
@@ -159,21 +140,15 @@ function GitaText({ gitaForeground }: SceneProps) {
 
 interface HeroSceneProps {
   gitaForeground?: boolean;
+  theme?: string;
 }
 
-export default function HeroScene({ gitaForeground = false }: HeroSceneProps) {
+export default function HeroScene({ gitaForeground = false, theme = 'velvet-purple' }: HeroSceneProps) {
   return (
-    <div
-      aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 60 }}
-        gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
-        dpr={[1, 1.5]}
-      >
-        <GitaText gitaForeground={gitaForeground} />
-        <Particles gitaForeground={gitaForeground} />
+    <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 60 }} gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }} dpr={[1, 1.5]}>
+        <GitaText gitaForeground={gitaForeground} theme={theme} />
+        <Particles gitaForeground={gitaForeground} theme={theme} />
       </Canvas>
     </div>
   );
