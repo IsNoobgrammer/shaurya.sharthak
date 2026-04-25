@@ -274,7 +274,7 @@ export default function Projects() {
                       <p className="project-description">{project.description}</p>
 
                       <div className="project-tags">
-                        {project.tags.slice(0, 4).map((tag) => (
+                        {project.tags.slice(0, 4).map((tag: string) => (
                           <span key={tag} className="project-tag">{tag}</span>
                         ))}
                         {project.tags.length > 4 && (
