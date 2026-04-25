@@ -53,9 +53,9 @@ export const socials: Social[] = [
 export const email = 'shauryajnvkkr@gmail.com';
 
 export const resumeRoles = [
-  { label: 'AI/ML Engineer', file: '/resumes/resume_ai_ml_engineer.pdf' },
-  { label: 'Data Scientist', file: '/resumes/resume_data_scientist.pdf' },
-  { label: 'NLP Research Scientist', file: '/resumes/resume_nlp_research_scientist.pdf' },
-  { label: 'Python SWE', file: '/resumes/resume_python_swe.pdf' },
-  { label: 'Cybersecurity', file: '/resumes/resume_cybersec.pdf' },
+  { label: 'AI/ML Engineer', file: '/resumes/Shaurya_AI_ML_Resume.pdf' },
+  { label: 'Data Scientist', file: '/resumes/Shaurya_Data_Scientist_Resume.pdf' },
+  { label: 'NLP Research Scientist', file: '/resumes/Shaurya_Researcher_Resume.pdf' },
+  { label: 'Python SWE', file: '/resumes/Shaurya_SWE_Resume.pdf' },
+  { label: 'Cybersecurity', file: '/resumes/Shaurya_CyberSec_Resume.pdf' },
 ];

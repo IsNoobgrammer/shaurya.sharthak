@@ -5,7 +5,7 @@ export default function Footer() {
         © 2026 Shaurya Sharthak
         &nbsp;·&nbsp;
         <span className="easter-egg">
-          Built with ☕ and free TPUs · paneer/sabzi approved
+          Built with 🍾🍺 and 🫡🥱 · Pronouns: paneer/sabzi
         </span>
       </p>
     </footer>

@@ -44,7 +44,7 @@ export default function Navbar() {
       <div className="navbar-inner">
         {/* Logo */}
         <a href="#hero" className="navbar-logo" onClick={() => handleNavClick('#hero')}>
-          <span>S</span>.S
+          <span>Shaurya</span>.Sharthak
         </a>
 
         {/* Desktop links */}
@@ -128,7 +128,7 @@ export default function Navbar() {
               </li>
             ))}
             <li>
-              <a href="/resumes/resume_ai_ml_engineer.pdf" download>
+              <a href="/resumes/Shaurya_AI_ML_Resume.pdf" download>
                 <FileText size={14} style={{ marginRight: 6 }} />
                 Download Resume
               </a>

@@ -14,8 +14,8 @@ interface BlogPost {
 }
 
 // ── GitHub API ────────────────────────────────────────────────────────────────
-const BLOG_API   = 'https://api.github.com/repos/IsNoobgrammer/UncensoredAI-Blogs/contents/';
-const RAW_BASE   = 'https://raw.githubusercontent.com/IsNoobgrammer/UncensoredAI-Blogs/main/';
+const BLOG_API   = 'https://api.github.com/repos/IsNoobgrammer/Vlogs-In-Portfolio/contents/';
+const RAW_BASE   = 'https://raw.githubusercontent.com/IsNoobgrammer/Vlogs-In-Portfolio/main/';
 
 function prettifySlug(name: string): string {
   return name
