@@ -42,10 +42,10 @@ export const themes: Theme[] = [
     description: 'Pure black. White chalk front. Inverse brutalist.',
     previewBg: '#0C0C0C',
     previewCardBg: 'rgba(20,20,20,0.9)',
-    previewAccent: '#E8E8E8',
-    previewText: '#F5F5F5',
-    previewMuted: '#6B6B6B',
-    swatches: ['#0C0C0C', '#E8E8E8', '#999999'],
+    previewAccent: '#C8C4BF',
+    previewText: '#D8D4CF',
+    previewMuted: '#605850',
+    swatches: ['#0C0C0C', '#C8C4BF', '#787470'],
   },
   {
     id: 'midnight-teal',
@@ -98,10 +98,10 @@ export function getInitialTheme(): ThemeId {
     const s = localStorage.getItem(THEME_KEY) as ThemeId | null;
     if (s && themes.find(t => t.id === s)) return s;
   } catch (_) { /* ignore */ }
-  return 'velvet-purple';
+  return 'obsidian';
 }
 
 export function applyTheme(id: ThemeId) {
-  document.documentElement.setAttribute('data-theme', id === 'velvet-purple' ? '' : id);
+  document.documentElement.setAttribute('data-theme', id);
   try { localStorage.setItem(THEME_KEY, id); } catch (_) { /* ignore */ }
 }

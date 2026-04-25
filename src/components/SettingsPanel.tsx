@@ -245,6 +245,21 @@ export default function SettingsPanel({ open, onClose, theme, onThemeChange }: S
               </div>
             </div>
 
+            {/* Reset */}
+            <div className="settings-reset-row">
+              <button
+                className="settings-reset-btn"
+                onClick={() => {
+                  if (window.confirm('Reset all preferences (theme, time data)?')) {
+                    try { localStorage.clear(); } catch (_) { /* ignore */ }
+                    window.location.reload();
+                  }
+                }}
+              >
+                ⟲ Reset all data
+              </button>
+            </div>
+
           </motion.div>
         </motion.div>
       )}

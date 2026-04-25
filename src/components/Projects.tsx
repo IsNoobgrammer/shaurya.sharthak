@@ -203,7 +203,7 @@ export default function Projects() {
           >
             <h2 className="section-title">Projects & Datasets</h2>
             <p className="section-subtitle">
-              What I've built — {filtered.length} items. Click any card to explore.
+              What I've built — {filtered.length}+ items. Click any card to explore.
             </p>
           </motion.div>
 
