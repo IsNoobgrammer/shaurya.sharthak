@@ -25,3 +25,9 @@ dist-ssr
 
 # Plans
 plans/
+
+# Evaluation
+evaluation/
+
+# Qodo
+.qodo/
