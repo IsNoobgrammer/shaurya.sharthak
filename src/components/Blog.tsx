@@ -265,7 +265,7 @@ export default function Blog() {
                     animate={inView ? { opacity: 1, y: 0 } : {}}
                     whileHover={{ x: 5, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.4, delay: i * 0.07 }}
-                    style={{ textAlign: 'left', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
                   >
                     {/* Faded index number */}
                     <span className="blog-card-index">{String(i + 1).padStart(2, '0')}</span>
