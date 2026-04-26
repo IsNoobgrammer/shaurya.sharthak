@@ -1,0 +1,110 @@
+/* ── Easter Egg — Egg Button ── */
+.egg-btn {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 200;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.45;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.egg-btn:hover {
+  opacity: 1;
+  transform: scale(1.12) rotate(-8deg);
+}
+
+.egg-btn.active {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px var(--text-accent));
+  animation: eggPulse 2s ease-in-out infinite;
+}
+
+.gita-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+/* Frosted card behind the verse */
+.gita-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 10% 5%;
+  background: rgba(5, 4, 15, 0.78);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-radius: 2rem;
+  border: 1px solid var(--glass-border-hover);
+  box-shadow:
+    0 0 80px var(--glass-bg) inset,
+    0 0 120px var(--glass-bg),
+    0 8px 32px rgba(0, 0, 0, 0.6);
+  animation: gitaGlow 4s ease-in-out infinite alternate;
+}
+
+.gita-verse-line {
+  position: relative;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.75rem, 3.5vw, 1.65rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-shadow:
+    0 0 30px var(--glass-bg-hover),
+    0 0 60px var(--glass-bg),
+    0 2px 4px rgba(0, 0, 0, 0.7);
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin: 0;
+  line-height: 2.1;
+}
+
+/* Ornamental divider between verse and translation */
+.gita-translation::before {
+  content: '┄ ◆ ┄';
+  display: block;
+  margin-bottom: 1.2rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.6em;
+  color: var(--text-accent);
+  opacity: 0.5;
+}
+
+.gita-translation {
+  position: relative;
+  margin-top: 1.8rem;
+  font-size: clamp(0.65rem, 2vw, 1.02rem);
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 2.2;
+  font-style: italic;
+  max-width: 560px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+  font-weight: 300;
+}
+
+.gita-source {
+  position: relative;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 1.4rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  opacity: 0.6;
+}
