@@ -4,8 +4,6 @@ import { ArrowDown } from 'lucide-react';
 
 const HeroScene = lazy(() => import('./three/HeroScene'));
 
-const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768;
-
 // Egg button — uses CSS custom properties so it adapts to all themes
 function EggButton({ active, onToggle }: { active: boolean; onToggle: () => void }) {
   return (
@@ -46,11 +44,9 @@ export default function Hero({ theme = 'velvet-purple' }: { theme?: string }) {
 
   return (
     <section id="hero" className="hero">
-      {!isMobile() && (
-        <Suspense fallback={null}>
-          <HeroScene gitaForeground={gitaMode} theme={theme} />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <HeroScene gitaForeground={gitaMode} theme={theme} />
+      </Suspense>
 
       <EggButton active={gitaMode} onToggle={toggleGita} />
 
