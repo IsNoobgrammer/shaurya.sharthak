@@ -6,14 +6,20 @@
   right: 0;
   z-index: 1000;
   padding: 1rem 2rem;
-  transition: all var(--transition-base);
+  /* Permanent transparent border avoids a layout shift / seam when .scrolled toggles */
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--transition-base),
+              backdrop-filter var(--transition-base),
+              -webkit-backdrop-filter var(--transition-base),
+              border-color var(--transition-base),
+              box-shadow var(--transition-base);
 }
 
 .navbar.scrolled {
   background: rgba(7, 7, 12, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom-color: var(--glass-border);
 }
 
 /* Obsidian: kill blue tint from navbar */
@@ -69,10 +75,10 @@
 
 .navbar-links a {
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 400;
+  font-size: var(--text-sm);
+  font-weight: 500;
   position: relative;
-  padding-bottom: 4px;
+  padding: 0.75rem 0 4px;
   transition: color var(--transition-fast);
 }
 
@@ -83,7 +89,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--gradient-purple);
+  background: var(--gradient-accent);
   border-radius: 1px;
   transition: width var(--transition-base);
 }
@@ -102,10 +108,12 @@
   border: none;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 0.5rem;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  align-items: center;
+  justify-content: center;
   -webkit-tap-highlight-color: transparent;
 }
-.mobile-toggle:focus { outline: none; }
 
 @media (max-width: 768px) {
   .navbar-links {
@@ -127,6 +135,6 @@
   }
 
   .mobile-toggle {
-    display: block;
+    display: inline-flex;
   }
 }

@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, FileText, Eye, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resumeRoles } from '../data/socials';
 import ResumePreviewModal from './ResumePreviewModal';
+import ScrollProgress from './ScrollProgress';
 
 const navLinks = [
   { label: 'About', href: '#about' },
@@ -20,37 +21,35 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
   const [cachedResumes, setCachedResumes] = useState<Record<string, string>>({});
   const resumeRef = useRef<HTMLDivElement>(null);
 
-  // Preload resumes into browser Cache API for instant download & preview
-  useEffect(() => {
-    const preloadResumes = async () => {
-      if (!('caches' in window)) return;
-      try {
-        const cache = await caches.open('resume-cache-v1');
-        const newCached: Record<string, string> = {};
-        
-        await Promise.all(resumeRoles.map(async (role) => {
-          try {
-            let response = await cache.match(role.file);
-            if (!response) {
-              await cache.add(role.file);
-              response = await cache.match(role.file);
-            }
-            if (response) {
-              const blob = await response.blob();
-              newCached[role.file] = URL.createObjectURL(blob);
-            }
-          } catch (e) {
-            console.warn(`Failed to cache ${role.file}`, e);
+  // Cache resumes on first dropdown/menu open — not on page load for every visitor
+  const preloadStarted = useRef(false);
+  const preloadResumes = useCallback(async () => {
+    if (preloadStarted.current || !('caches' in window)) return;
+    preloadStarted.current = true;
+    try {
+      const cache = await caches.open('resume-cache-v1');
+      const newCached: Record<string, string> = {};
+
+      await Promise.all(resumeRoles.map(async (role) => {
+        try {
+          let response = await cache.match(role.file);
+          if (!response) {
+            await cache.add(role.file);
+            response = await cache.match(role.file);
           }
-        }));
-        
-        setCachedResumes(newCached);
-      } catch (e) {
-        console.warn('Cache API failed', e);
-      }
-    };
-    
-    preloadResumes();
+          if (response) {
+            const blob = await response.blob();
+            newCached[role.file] = URL.createObjectURL(blob);
+          }
+        } catch (e) {
+          console.warn(`Failed to cache ${role.file}`, e);
+        }
+      }));
+
+      setCachedResumes(newCached);
+    } catch (e) {
+      console.warn('Cache API failed', e);
+    }
   }, []);
 
   useEffect(() => {
@@ -105,7 +104,8 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
             <button
               id="resume-btn"
               className="btn btn-secondary resume-btn"
-              onClick={() => setResumeOpen((p) => !p)}
+              onClick={() => { preloadResumes(); setResumeOpen((p) => !p); }}
+              onMouseEnter={preloadResumes}
               aria-haspopup="true"
               aria-expanded={resumeOpen}
             >
@@ -162,7 +162,7 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
           <button
             className="mobile-toggle"
             id="mobile-menu-btn"
-            onClick={() => setMobileOpen((p) => !p)}
+            onClick={() => { preloadResumes(); setMobileOpen((p) => !p); }}
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
           >
@@ -206,6 +206,9 @@ export default function Navbar({ onLogoClick }: { onLogoClick?: () => void }) {
             </motion.ul>
           )}
         </AnimatePresence>
+
+        {/* Scroll progress — pinned to the header's bottom edge */}
+        <ScrollProgress />
       </nav>
 
       {/* Resume Preview Modal */}

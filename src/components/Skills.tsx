@@ -14,12 +14,20 @@ const iconMap: Record<string, IconComponent> = {
   Terminal,
 };
 
+// A flat, punchy set of keywords for the scrolling marquee band.
+const marqueeItems = [
+  'PyTorch/XLA', 'TPU v2-8', 'GSPMD', 'JAX/Flax', 'RLHF / GRPO', 'Tokenizer Design',
+  'Supertoken Learning', 'Indic NLP', 'HuggingFace', 'Unsloth', 'FAISS', 'LangChain',
+  'Distributed Training', 'Mixed Precision', 'FastAPI', 'React + TS', 'Docker',
+  'OWASP Top 10', 'Pen Testing', 'PostgreSQL', 'Pandas / NumPy',
+];
+
 export default function Skills() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="skills" className="section" style={{ background: 'var(--bg-secondary)' }} ref={ref}>
+    <section id="skills" className="section" style={{ background: 'color-mix(in srgb, var(--bg-secondary) 88%, transparent)' }} ref={ref}>
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -30,6 +38,18 @@ export default function Skills() {
           <p className="section-subtitle">The toolkit.</p>
         </motion.div>
 
+        {/* Auto-scrolling tech marquee */}
+        <div className="marquee" aria-hidden="true">
+          <div className="marquee-track">
+            {[...marqueeItems, ...marqueeItems].map((item, i) => (
+              <span className="marquee-chip" key={i}>
+                <span className="dot" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
         <div className="skills-grid">
           {skillCategories.map((cat, i) => {
             const Icon: IconComponent = iconMap[cat.icon] ?? (Terminal as IconComponent);
@@ -37,8 +57,10 @@ export default function Skills() {
               <motion.div
                 key={cat.id}
                 className="glass-card skill-category"
-                initial={{ opacity: 0, y: 20 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
+                data-tilt
+                data-spotlight
+                initial={{ opacity: 0 }}
+                animate={inView ? { opacity: 1 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.07 }}
               >
                 <div className="skill-category-header">

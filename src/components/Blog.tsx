@@ -77,14 +77,22 @@ async function fetchPosts(): Promise<BlogPost[]> {
 }
 
 // ── Simple Markdown → HTML renderer (no deps) ────────────────────────────────
+// Escape raw HTML first — content comes from a remote repo and is injected
+// via dangerouslySetInnerHTML, so nothing may pass through unescaped.
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function renderMarkdown(md: string): string {
   const codeBlocks: string[] = [];
-  
+
   // 1. Extract code blocks so they aren't messed up by other replacements
   let parsed = md.replace(/```(\w*)\r?\n([\s\S]+?)```/g, (_, lang, code) => {
-    codeBlocks.push(`<pre><code class="language-${lang}">${code}</code></pre>`);
+    codeBlocks.push(`<pre><code class="language-${escapeHtml(lang)}">${escapeHtml(code)}</code></pre>`);
     return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
   });
+
+  parsed = escapeHtml(parsed);
 
   parsed = parsed
     // headings
@@ -97,12 +105,12 @@ function renderMarkdown(md: string): string {
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     // inline code
     .replace(/`(.+?)`/g, '<code>$1</code>')
-    // blockquote
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // blockquote (input is HTML-escaped, so `>` arrives as `&gt;`)
+    .replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
     // unordered list items
     .replace(/^\s*[-*+] (.+)$/gm, '<li>$1</li>')
-    // links
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    // links (http(s) and anchors only — blocks javascript: URLs)
+    .replace(/\[(.+?)\]\((https?:\/\/[^)\s]+|#[^)\s]*)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     // horizontal rule
     .replace(/^---$/gm, '<hr />')
     // paragraphs (double newline)
@@ -259,6 +267,7 @@ export default function Blog() {
                   <motion.button
                     key={post.slug}
                     className="glass-card blog-card"
+                    data-spotlight
                     onClick={() => setActive(post)}
                     id={`blog-card-${post.slug}`}
                     initial={{ opacity: 0, y: 20 }}

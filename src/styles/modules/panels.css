@@ -386,14 +386,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--gradient-purple);
+  background: var(--gradient-accent);
   opacity: 0;
   transition: opacity var(--transition-base);
 }
 
 .settings-clock:hover {
   border-color: var(--glass-border-hover);
-  box-shadow: var(--shadow-purple);
+  box-shadow: var(--shadow-accent);
   transform: translateY(-2px);
 }
 
@@ -423,7 +423,7 @@
   letter-spacing: 0.05em;
   line-height: 1;
   margin-bottom: 0.4rem;
-  background: var(--gradient-purple);
+  background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

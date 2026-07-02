@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Link2, Code2, GraduationCap, FileText, Bot, Mail } from 'lucide-react';
 
 import { socials, email } from '../data/socials';
+import Magnetic from './Magnetic';
 
 type IconComponent = React.FC<{ size?: number; className?: string }>;
 
@@ -21,7 +22,7 @@ export default function Contact() {
   const inView = useInView(ref, { once: true, margin: '-80px' });
 
   return (
-    <section id="contact" className="section" style={{ background: 'var(--bg-secondary)' }} ref={ref}>
+    <section id="contact" className="section" style={{ background: 'color-mix(in srgb, var(--bg-secondary) 88%, transparent)' }} ref={ref}>
       <div className="container">
         <motion.div
           className="contact-content"
@@ -60,18 +61,24 @@ export default function Contact() {
             })}
           </div>
 
-          <motion.a
-            href={`mailto:${email}`}
-            className="btn btn-primary"
-            id="contact-email-btn"
-            style={{ display: 'inline-flex', gap: '0.5rem' }}
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.5 }}
+            style={{ display: 'inline-block' }}
           >
-            <Mail size={16} />
-            Say Hello →
-          </motion.a>
+            <Magnetic strength={0.45}>
+              <a
+                href={`mailto:${email}`}
+                className="btn btn-primary"
+                id="contact-email-btn"
+                style={{ display: 'inline-flex', gap: '0.5rem' }}
+              >
+                <Mail size={16} />
+                Say Hello →
+              </a>
+            </Magnetic>
+          </motion.div>
         </motion.div>
       </div>
     </section>

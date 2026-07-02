@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import CountUp from './CountUp';
 
 const stats = [
   { value: '234', label: 'GitHub Stars', amber: true, suffix: '⭐' },
@@ -13,6 +14,16 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
+    transition: { duration: 0.5, delay: i * 0.1 },
+  }),
+};
+
+// Opacity-only entrance — used on cards that carry a CSS 3D-tilt transform,
+// so framer-motion doesn't write an inline transform that would override it.
+const fadeOnly = {
+  hidden: { opacity: 0 },
+  visible: (i: number) => ({
+    opacity: 1,
     transition: { duration: 0.5, delay: i * 0.1 },
   }),
 };
@@ -79,37 +90,55 @@ export default function About() {
             </p>
           </motion.div>
 
-          {/* Stats grid */}
-          <div className="stats-grid">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="glass-card stat-card"
-                custom={i}
-                variants={fadeUp}
-                initial="hidden"
-                animate={inView ? 'visible' : 'hidden'}
-              >
-                <span
-                  className="stat-number"
-                  style={
-                    stat.amber
-                      ? {
-                        background: 'linear-gradient(135deg, #F59E0B, #FBBF24)',
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }
-                      : undefined
-                  }
+          {/* Right rail — sticky stats + current focus */}
+          <div className="about-rail">
+            <div className="stats-grid">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  className="glass-card stat-card"
+                  data-tilt
+                  data-spotlight
+                  custom={i}
+                  variants={fadeOnly}
+                  initial="hidden"
+                  animate={inView ? 'visible' : 'hidden'}
                 >
-                  {stat.value}
-                </span>
-                <span className="stat-label">
-                  {stat.suffix} {stat.label}
-                </span>
-              </motion.div>
-            ))}
+                  <span
+                    className="stat-number"
+                    style={stat.amber ? { color: '#F59E0B' } : undefined}
+                  >
+                    <CountUp value={stat.value} />
+                  </span>
+                  <span className="stat-label">
+                    {stat.suffix} {stat.label}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              className="glass-card now-card"
+              data-spotlight
+              custom={4}
+              variants={fadeUp}
+              initial="hidden"
+              animate={inView ? 'visible' : 'hidden'}
+            >
+              <div className="now-card-head">
+                <span className="now-pulse" aria-hidden="true" />
+                Currently
+              </div>
+              <ul className="now-list">
+                <li>Running <strong>entropy-minimization</strong> ablations on RLHF steerability</li>
+                <li>Scaling <strong>Indic LLM pre-training</strong> on free TPU pods</li>
+                <li>Maintaining <strong>54 open datasets</strong> &amp; 155+ HF models</li>
+              </ul>
+              <div className="now-tags">
+                <span className="now-tag">Tinycompany-AI</span>
+                <span className="now-tag">Open for research internships</span>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

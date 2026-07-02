@@ -15,12 +15,9 @@ const GITA_LINES = [
 
 const THEME_COLORS: Record<string, { particle: string; line: string; textFill: string; textShadow: string }> = {
   'velvet-purple': { particle: '#A78BFA', line: 'rgba(167,139,250,0.08)', textFill: 'rgba(200,170,255,1.0)', textShadow: 'rgba(167,139,250,0.8)' },
-  'moonwhite':     { particle: '#2D2D2D', line: 'rgba(28,28,28,0.06)',    textFill: 'rgba(20,20,20,0.9)',    textShadow: 'rgba(28,28,28,0.35)' },
   'obsidian':      { particle: '#787470', line: 'rgba(120,116,112,0.06)', textFill: 'rgba(200,196,191,0.85)', textShadow: 'rgba(168,164,160,0.3)' },
   'midnight-teal': { particle: '#2DD4BF', line: 'rgba(45,212,191,0.07)', textFill: 'rgba(94,234,212,1.0)',  textShadow: 'rgba(20,184,166,0.8)' },
-  'crimson-noir':  { particle: '#E11D48', line: 'rgba(225,29,72,0.06)',  textFill: 'rgba(253,164,175,1.0)', textShadow: 'rgba(190,18,60,0.8)' },
-  'mocha-mint':    { particle: '#86EFAC', line: 'rgba(134,239,172,0.06)', textFill: 'rgba(134,239,172,1.0)', textShadow: 'rgba(74,222,128,0.7)' },
-  'solar-amber':   { particle: '#FBBF24', line: 'rgba(251,191,36,0.06)', textFill: 'rgba(251,191,36,1.0)',  textShadow: 'rgba(245,158,11,0.7)' },
+  'moonwhite':     { particle: '#2D2D2D', line: 'rgba(28,28,28,0.06)',    textFill: 'rgba(20,20,20,0.9)',    textShadow: 'rgba(28,28,28,0.35)' },
 };
 
 interface SceneProps {
@@ -36,8 +33,8 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
   const mouseRef = useRef({ x: 0, y: 0 });
   const colors = THEME_COLORS[theme] ?? THEME_COLORS['velvet-purple'];
   const isLight = theme === 'moonwhite';
-  const count = 500;
-  const connectionDist = 1.8;
+  const count = 320;
+  const connectionDist = 1.9;
 
   // Generate soft glowing particle texture
   const particleTexture = useMemo(() => {
@@ -74,7 +71,7 @@ function ParticleField({ gitaForeground, theme }: SceneProps) {
     return s;
   }, []);
 
-  const maxLines = 800;
+  const maxLines = 550;
   const linePositions = useMemo(() => new Float32Array(maxLines * 6), []);
   const lineColors = useMemo(() => new Float32Array(maxLines * 6), []);
 
@@ -278,12 +275,18 @@ function GitaText({ gitaForeground, theme }: SceneProps) {
 interface HeroSceneProps {
   gitaForeground?: boolean;
   theme?: string;
+  active?: boolean;
 }
 
-export default function HeroScene({ gitaForeground = false, theme = 'obsidian' }: HeroSceneProps) {
+export default function HeroScene({ gitaForeground = false, theme = 'obsidian', active = true }: HeroSceneProps) {
   return (
     <div aria-hidden="true" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-      <Canvas camera={{ position: [0, 0, 5], fov: 60 }} gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }} dpr={[1, 1.5]}>
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 60 }}
+        gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
+        dpr={[1, 1.5]}
+        frameloop={active ? 'always' : 'never'}
+      >
         <GitaText gitaForeground={gitaForeground} theme={theme} />
         <ParticleField gitaForeground={gitaForeground} theme={theme} />
       </Canvas>

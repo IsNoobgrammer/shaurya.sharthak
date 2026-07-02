@@ -8,18 +8,22 @@
 .section {
   padding: var(--section-padding);
   position: relative;
+  /* Frosted wash over the fixed space scene: mostly opaque + gaussian blur so
+     the (paused) background reads as texture, not content. */
+  background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .section-title {
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  background: var(--gradient-purple);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
   position: relative;
   display: inline-block;
+  text-wrap: balance;
 }
 
 .section-title::after {
@@ -29,9 +33,9 @@
   left: 0;
   width: 40px;
   height: 2px;
-  background: var(--gradient-purple);
+  background: var(--text-accent);
   border-radius: 1px;
-  transition: width 0.4s ease;
+  transition: width 0.4s var(--ease-out-expo);
 }
 
 .section:hover .section-title::after {
@@ -39,8 +43,8 @@
 }
 
 .section-subtitle {
-  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+  font-size: var(--text-base);
   color: var(--text-secondary);
-  margin-bottom: 3rem;
-  font-weight: 300;
+  margin-bottom: var(--space-8);
+  font-weight: 400;
 }

@@ -1,6 +1,7 @@
-import { Suspense, lazy, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Suspense, lazy, useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion, useInView } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
+import Magnetic from './Magnetic';
 
 const HeroScene = lazy(() => import('./three/HeroScene'));
 
@@ -37,42 +38,68 @@ function EggButton({ active, onToggle }: { active: boolean; onToggle: () => void
 
 export default function Hero({ theme = 'velvet-purple' }: { theme?: string }) {
   const [gitaMode, setGitaMode] = useState(false);
+  const reduce = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  // Pause the particle simulation once the hero is scrolled well out of view.
+  const heroActive = useInView(sectionRef, { margin: '0px 0px -40% 0px' });
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, 130]);
+  const parallaxOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+  const parallaxScale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
+  const scrollStyle = reduce ? undefined : { y: parallaxY, opacity: parallaxOpacity, scale: parallaxScale };
 
   const scrollToProjects = () => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' });
   const scrollToContact = () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   const toggleGita = useCallback(() => setGitaMode((v) => !v), []);
 
+  // The particle "lines & dots" scene is kept only for light themes; dark themes
+  // use the WebGL space scene (rendered as the page background in App).
+  const lightTheme = theme === 'moonwhite';
+
   return (
-    <section id="hero" className="hero">
-      <Suspense fallback={null}>
-        <HeroScene gitaForeground={gitaMode} theme={theme} />
-      </Suspense>
+    <section id="hero" className="hero" ref={sectionRef}>
+      {lightTheme && (
+        <Suspense fallback={null}>
+          <HeroScene gitaForeground={gitaMode} theme={theme} active={heroActive} />
+        </Suspense>
+      )}
+
+      {!lightTheme && <div className="hero-scrim" aria-hidden="true" />}
 
       <EggButton active={gitaMode} onToggle={toggleGita} />
 
+      <motion.div className="hero-content" style={scrollStyle}>
       <motion.div
-        className="hero-content"
         animate={{ opacity: gitaMode ? 0.12 : 1 }}
         transition={{ duration: 1.2, ease: 'easeInOut' }}
         initial={{ opacity: 0, y: 30 }}
       >
-        <motion.p className="hero-greeting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+        <motion.p className="hero-greeting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}>
           Veni, Vidi, Vici — I came, I saw, I conquered.
         </motion.p>
 
-        <motion.h1 className="hero-name" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
+        <motion.h1 className="hero-name" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}>
           Shaurya Sharthak
         </motion.h1>
 
-        <motion.p className="hero-tagline" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.65 }}>
+        <motion.p className="hero-tagline" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}>
           <strong>AI/ML Researcher</strong> · <strong>Data Nerd</strong> ·{' '}
           <strong>Model Whisperer</strong>
         </motion.p>
 
-        <motion.div className="hero-buttons" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.8 }}>
-          <button id="hero-view-projects" className="btn btn-primary" onClick={scrollToProjects}>View Projects</button>
-          <button id="hero-get-in-touch" className="btn btn-secondary" onClick={scrollToContact}>Get in Touch</button>
+        <motion.div className="hero-buttons" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}>
+          <Magnetic>
+            <button id="hero-view-projects" className="btn btn-primary" onClick={scrollToProjects}>View Projects</button>
+          </Magnetic>
+          <Magnetic>
+            <button id="hero-get-in-touch" className="btn btn-secondary" onClick={scrollToContact}>Get in Touch</button>
+          </Magnetic>
         </motion.div>
+      </motion.div>
       </motion.div>
 
       <AnimatePresence>
@@ -93,7 +120,7 @@ export default function Hero({ theme = 'velvet-purple' }: { theme?: string }) {
         )}
       </AnimatePresence>
 
-      <motion.div className="scroll-indicator" initial={{ opacity: 0 }} animate={{ opacity: gitaMode ? 0 : 1 }} transition={{ delay: 1.4, duration: 0.6 }}>
+      <motion.div className="scroll-indicator" initial={{ opacity: 0 }} animate={{ opacity: gitaMode ? 0 : 1 }} transition={{ delay: 0.8, duration: 0.6 }}>
         <ArrowDown size={18} />
       </motion.div>
     </section>

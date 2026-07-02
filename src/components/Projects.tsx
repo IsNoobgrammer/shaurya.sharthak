@@ -9,8 +9,8 @@ import { projects, type Project, type ProjectCategory } from '../data/projects';
 type Filter = 'All' | ProjectCategory;
 const filters: Filter[] = ['All', 'Research', 'Infrastructure', 'Tokenizers', 'Datasets', 'Tools', 'Security'];
 
-const CARDS_PER_VIEW = 3;
-const AUTO_SLIDE_MS = 3200;
+// 4×2 grid per slide — fixed vertical footprint, page horizontally for the rest.
+const PAGE_SIZE = 8;
 
 // ── Project Reader Panel ──────────────────────────────────────────────────────
 function ProjectReader({ project, onClose }: { project: Project; onClose: () => void }) {
@@ -160,35 +160,20 @@ function ProjectReader({ project, onClose }: { project: Project; onClose: () => 
 // ── Main Projects Component ───────────────────────────────────────────────────
 export default function Projects() {
   const [activeFilter, setActiveFilter] = useState<Filter>('All');
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [page, setPage] = useState(0);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const filtered =
-    activeFilter === 'All' ? projects : projects.filter((p) => p.category === activeFilter);
+  const filtered = (activeFilter === 'All' ? projects : projects.filter((p) => p.category === activeFilter))
+    // featured work first, then keep data order
+    .slice()
+    .sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false));
 
-  const maxIndex = Math.max(0, filtered.length - CARDS_PER_VIEW);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const visible = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  useEffect(() => { setIndex(0); }, [activeFilter]);
-
-  const next = useCallback(() => setIndex((i) => Math.min(i + 1, maxIndex)), [maxIndex]);
-  const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
-
-  const isReaderOpen = activeProject !== null;
-
-  useEffect(() => {
-    if (paused || isReaderOpen) return;
-    timerRef.current = setInterval(() => {
-      setIndex((i) => (i >= maxIndex ? 0 : i + 1));
-    }, AUTO_SLIDE_MS);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, maxIndex, activeFilter, isReaderOpen]);
-
-  const visibleCards = filtered.slice(index, index + CARDS_PER_VIEW);
-  const padded = [...visibleCards, ...Array(Math.max(0, CARDS_PER_VIEW - visibleCards.length)).fill(null)];
+  useEffect(() => { setPage(0); }, [activeFilter]);
 
   const closeReader = useCallback(() => setActiveProject(null), []);
 
@@ -199,7 +184,7 @@ export default function Projects() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <h2 className="section-title">Projects & Datasets</h2>
             <p className="section-subtitle">
@@ -226,115 +211,106 @@ export default function Projects() {
             ))}
           </motion.div>
 
-          {/* Carousel */}
-          <div
-            className="carousel-wrapper"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-          >
+          {/* Paged grid carousel */}
+          <div className="projects-carousel">
             <button
-              className="carousel-arrow carousel-arrow-left"
-              onClick={prev}
-              disabled={index === 0}
+              className="carousel-arrow"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
               aria-label="Previous projects"
             >
               <ChevronLeft size={20} />
             </button>
 
-            <div className="carousel-track">
-              <AnimatePresence mode="popLayout">
-                {padded.map((project, i) =>
-                  project ? (
-                    <motion.div
-                      key={`${project.id}-${index}`}
-                      className="glass-card project-card"
-                      layout
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -40 }}
-                      transition={{ duration: 0.3, delay: i * 0.05 }}
-                      onClick={() => setActiveProject(project)}
-                      id={`project-card-${project.id}`}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter') setActiveProject(project); }}
-                    >
-                      {/* Faded index number */}
-                      <span className="project-card-index">{String(index + i + 1).padStart(2, '0')}</span>
-                      {/* Category badge */}
-                      <span className="project-category-badge">{project.category}</span>
+            <div className="projects-viewport">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`${activeFilter}-${page}`}
+                  className="projects-grid"
+                  initial={{ opacity: 0, x: 60 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  exit={{ opacity: 0, x: -60 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                >
+              {visible.map((project) => (
+                <div
+                  key={project.id}
+                  className="glass-card project-card"
+                  data-spotlight
+                  onClick={() => setActiveProject(project)}
+                  id={`project-card-${project.id}`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveProject(project); } }}
+                >
+                  <span className="project-category-badge">{project.category}</span>
 
-                      <div className="project-header">
-                        <span className="project-title">{project.title}</span>
-                        <span className="project-icon">
-                          {project.platform === 'github'
-                            ? <Code2 size={17} />
-                            : <span style={{ fontSize: '1.05rem' }}>🤗</span>}
-                        </span>
-                      </div>
+                  <div className="project-header">
+                    <span className="project-title">{project.title}</span>
+                    <span className="project-icon">
+                      {project.platform === 'github'
+                        ? <Code2 size={17} />
+                        : <span style={{ fontSize: '1.05rem' }}>🤗</span>}
+                    </span>
+                  </div>
 
-                      <p className="project-description">{project.description}</p>
+                  <p className="project-description">{project.description}</p>
 
-                      <div className="project-tags">
-                        {project.tags.slice(0, 4).map((tag: string) => (
-                          <span key={tag} className="project-tag">{tag}</span>
-                        ))}
-                        {project.tags.length > 4 && (
-                          <span className="project-tag">+{project.tags.length - 4}</span>
-                        )}
-                      </div>
+                  <div className="project-tags">
+                    {project.tags.slice(0, 4).map((tag: string) => (
+                      <span key={tag} className="project-tag">{tag}</span>
+                    ))}
+                    {project.tags.length > 4 && (
+                      <span className="project-tag">+{project.tags.length - 4}</span>
+                    )}
+                  </div>
 
-                      <div className="project-footer">
-                        {project.stars !== undefined && (
-                          <span className="project-stat">
-                            <Star size={11} style={{ color: '#F59E0B' }} />
-                            {project.stars}
-                          </span>
-                        )}
-                        {project.forks !== undefined && (
-                          <span className="project-stat">
-                            <GitFork size={11} />
-                            {project.forks}
-                          </span>
-                        )}
-                        <span className="project-link">
-                          Expand <ExternalLink size={11} />
-                        </span>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <div key={`pad-${i}`} className="project-card-placeholder" />
-                  )
-                )}
+                  <div className="project-footer">
+                    {project.stars !== undefined && (
+                      <span className="project-stat">
+                        <Star size={11} style={{ color: '#F59E0B' }} />
+                        {project.stars}
+                      </span>
+                    )}
+                    {project.forks !== undefined && (
+                      <span className="project-stat">
+                        <GitFork size={11} />
+                        {project.forks}
+                      </span>
+                    )}
+                    <span className="project-link">
+                      Expand <ExternalLink size={11} />
+                    </span>
+                  </div>
+                </div>
+              ))}
+                </motion.div>
               </AnimatePresence>
             </div>
 
             <button
-              className="carousel-arrow carousel-arrow-right"
-              onClick={next}
-              disabled={index >= maxIndex}
+              className="carousel-arrow"
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              disabled={page >= pageCount - 1}
               aria-label="Next projects"
             >
               <ChevronRight size={20} />
             </button>
           </div>
 
-          {/* Progress bar + Dots */}
-          <div className="carousel-progress">
-            <div className="carousel-progress-fill" style={{ width: `${((index + 1) / (maxIndex + 1)) * 100}%` }} />
-          </div>
-          <div className="carousel-dots">
-            {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-              <button
-                key={i}
-                className={`carousel-dot${i === index ? ' active' : ''}`}
-                onClick={() => setIndex(i)}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
-
-          <p className="carousel-hint">Click card to explore · Hover to pause · Arrows to navigate</p>
+          {/* Page dots */}
+          {pageCount > 1 && (
+            <div className="carousel-dots">
+              {Array.from({ length: pageCount }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`carousel-dot${i === page ? ' active' : ''}`}
+                  onClick={() => setPage(i)}
+                  aria-label={`Go to page ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
