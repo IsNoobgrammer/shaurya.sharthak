@@ -183,7 +183,11 @@ const holeNDC = [
 const holeVZ = [0, 0, 0, 0];
 const galWorld = new THREE.Vector3();
 const nav = { px: 0, py: 0, tpx: 0, tpy: 0, impulse: 0, speed: 0 };
-const camPos = new THREE.Vector3(0, 2, 15);
+// Default view: already dived into the scene — low over the fabric with the
+// bodies looming large (the perspective you reach by zooming in a while).
+const CAM_START: [number, number, number] = [0, -2, -16];
+const AIM_PITCH = -0.14; // slight downward tilt toward the sheet
+const camPos = new THREE.Vector3(...CAM_START);
 const aim = new THREE.Vector3(0, 0, -1);
 const _v = new THREE.Vector3();
 
@@ -305,7 +309,7 @@ function Driver() {
     // horizon you're "stuck", exactly like an outside observer in GR).
     nav.px += (nav.tpx - nav.px) * 0.05;
     nav.py += (nav.tpy - nav.py) * 0.05;
-    aim.set(nav.px * 0.8, -nav.py * 0.6, -1).normalize();
+    aim.set(nav.px * 0.8, -nav.py * 0.6 + AIM_PITCH, -1).normalize();
     let dMin = Infinity;
     for (let i = 0; i < 3; i++)
       dMin = Math.min(dMin, camPos.distanceTo(bhWorld[i]));
@@ -658,9 +662,15 @@ export default function SpaceScene() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     setReady(true);
-    const move = (e: PointerEvent) => {
+    // The camera does NOT follow the cursor — constant drift is bad UX.
+    // Double-click (or double-tap) pans the camera to that spot and holds it,
+    // with a gentle glide toward it; scroll/pinch still control the dive.
+    const dbl = (e: MouseEvent) => {
+      const hero = document.getElementById("hero");
+      if (hero && hero.getBoundingClientRect().bottom < 80) return;
       nav.tpx = (e.clientX / window.innerWidth) * 2 - 1;
       nav.tpy = (e.clientY / window.innerHeight) * 2 - 1;
+      nav.impulse = Math.min(0.9, nav.impulse + 0.35);
     };
     // Adaptive zoom: sustained zooming in one direction winds up a streak that
     // multiplies both the per-tick gain and the speed cap — first ticks are
@@ -712,12 +722,12 @@ export default function SpaceScene() {
       applyZoom((d - pStart) * 0.02);
       pStart = d;
     };
-    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("dblclick", dbl);
     window.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("touchstart", tStart, { passive: true });
     window.addEventListener("touchmove", tMove, { passive: false });
     return () => {
-      window.removeEventListener("pointermove", move);
+      window.removeEventListener("dblclick", dbl);
       window.removeEventListener("wheel", wheel);
       window.removeEventListener("touchstart", tStart);
       window.removeEventListener("touchmove", tMove);
@@ -733,7 +743,7 @@ export default function SpaceScene() {
           powerPreference: "high-performance",
         }}
         dpr={1}
-        camera={{ position: [0, 2, 15], fov: 68 }}
+        camera={{ position: CAM_START, fov: 68 }}
         frameloop="demand"
       >
         <SceneContents />
